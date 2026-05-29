@@ -23,7 +23,7 @@
                 <div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-3">
                     <div class="flex justify-between items-center pb-1 border-b">
                         <h3 class="text-sm font-semibold text-gray-700">收錄則數統計</h3>
-                        <span class="text-[10px] text-gray-400">💡編號右鍵可刪除/欄位右鍵可修改</span>
+                        <span class="text-[10px] text-gray-400">💡欄位右鍵可修改/編號右鍵可刪</span>
                     </div>
                     <div class="space-y-1.5 text-xs text-gray-600">
                         <div class="flex justify-between"><span>報紙：</span><span id="count-newspaper" class="font-bold text-indigo-600">0</span></div>
@@ -35,6 +35,10 @@
                     </div>
                     
                     <hr class="my-2">
+
+                    <button onclick="toggleInputModal(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-2 text-xs font-bold rounded-md shadow transition text-center block">
+                        ➕ 開啟新增報導窗格
+                    </button>
                     
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="exportProject()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium rounded-md border border-blue-200 transition text-center">
@@ -52,56 +56,6 @@
             </div>
 
             <div class="md:col-span-3 space-y-4">
-                <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-3">新增報導資訊</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">收錄日期</label>
-                            <input type="date" id="newsDate" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">報導類型</label>
-                            <select id="newsType" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                                <option value="網路">網路</option>
-                                <option value="報紙">報紙</option>
-                                <option value="影音">影音</option>
-                                <option value="雜誌">雜誌</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-medium text-gray-400 mb-1">媒體名稱</label>
-                            <input type="text" id="mediaName" placeholder="例如：中央社" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">報導標題 <span class="text-red-500">*</span></label>
-                            <input type="text" id="newsTitle" placeholder="請輸入新聞標題（必填）" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">報導網址或報紙版位</label>
-                            <input type="text" id="newsLink" placeholder="https://... 或 A3版" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2 items-end">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">記者名字</label>
-                            <input type="text" id="reporter" placeholder="陳大文（選填）" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">關鍵字（用逗號隔開）</label>
-                            <input type="text" id="keywords" placeholder="如：新產品, 淨零碳排" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                        <div>
-                            <button onclick="importNews()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-md font-medium text-xs shadow transition">
-                                ➕ 匯入資料
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
                     <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE)</h3>
@@ -115,7 +69,7 @@
                             <input type="file" id="importCSVFile" class="hidden" accept=".csv" onchange="importCSV(event)">
                         </div>
                     </div>
-                    <div class="overflow-x-auto max-h-80">
+                    <div class="overflow-x-auto max-h-96">
                         <table class="w-full text-left border-collapse text-xs table-fixed">
                             <thead class="sticky top-0 bg-gray-100 shadow-sm z-10 text-gray-500 font-medium border-b border-gray-200">
                                 <tr>
@@ -136,12 +90,7 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-sm font-semibold text-gray-700">第二步：篩選主管交辦資料與排序</h3>
-                        <button onclick="toggleHistoryModal()" class="text-xs text-indigo-600 hover:underline">
-                            📜 查看歷史匯出紀錄
-                        </button>
-                    </div>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">第二步：篩選主管交辦資料與排序</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <div>
                             <label class="block text-xs font-medium text-gray-400 mb-1">起始序號</label>
@@ -167,36 +116,95 @@
         </div>
     </div>
 
+    <div id="inputModal" class="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-40 hidden animate-fade-in">
+        <div class="bg-indigo-600 text-white p-3 rounded-t-2xl flex justify-between items-center cursor-move">
+            <h3 class="text-xs font-bold flex items-center">📝 新增報導資訊 (可對照後方資料庫)</h3>
+            <button onclick="toggleInputModal(false)" class="text-indigo-200 hover:text-white text-xs font-medium bg-indigo-700 px-2 py-0.5 rounded">✕ 關閉</button>
+        </div>
+        <div class="p-4 space-y-2.5 max-h-[75vh] overflow-y-auto text-xs">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-gray-400 mb-1">收錄日期</label>
+                    <input type="date" id="newsDate" class="w-full p-1.5 border border-gray-300 rounded-md">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">報導類型</label>
+                    <select id="newsType" class="w-full p-1.5 border border-gray-300 rounded-md">
+                        <option value="網路">網路</option>
+                        <option value="報紙">報紙</option>
+                        <option value="影音">影音</option>
+                        <option value="雜誌">雜誌</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">媒體名稱</label>
+                <input type="text" id="mediaName" placeholder="例如：中央社" class="w-full p-1.5 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">報導標題 <span class="text-red-500">*</span></label>
+                <input type="text" id="newsTitle" placeholder="請輸入新聞標題（必填）" class="w-full p-1.5 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">報導網址或報紙版位</label>
+                <input type="text" id="newsLink" placeholder="https://... 或 A3版" class="w-full p-1.5 border border-gray-300 rounded-md">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-gray-400 mb-1">記者名字</label>
+                    <input type="text" id="reporter" placeholder="陳大文（選填）" class="w-full p-1.5 border border-gray-300 rounded-md">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">關鍵字</label>
+                    <input type="text" id="keywords" placeholder="用逗號隔開" class="w-full p-1.5 border border-gray-300 rounded-md">
+                </div>
+            </div>
+            <button onclick="importNews()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 mt-2 rounded-md font-bold shadow transition">
+                ➕ 匯入此筆資料
+            </button>
+        </div>
+    </div>
+
+
     <div id="sortModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-4xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="bg-gray-100 p-4 border-b flex justify-between items-center">
+        <div class="bg-white w-full max-w-6xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="bg-gray-100 p-4 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
                     <h3 class="text-base font-bold text-gray-800">🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
                     <p class="text-xs text-gray-500">排在最上方的會是最優先的新聞內容</p>
                 </div>
-                <button onclick="closeSortModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold px-2">＆times;</button>
+                <div class="flex items-center space-x-2 text-xs bg-white p-2 rounded-md border shadow-sm">
+                    <div>
+                        <label class="block text-[10px] text-gray-400 font-medium">日期 (如:0520)</label>
+                        <input type="text" id="lineReportDate" placeholder="0520" class="w-20 p-1 border rounded text-center font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 font-medium">收錄時間 (如:18:00)</label>
+                        <input type="text" id="lineReportTime" placeholder="18:00" class="w-20 p-1 border rounded text-center font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <button onclick="closeSortModal()" class="text-gray-500 hover:text-gray-700 text-xs font-bold border border-gray-300 px-2 py-2 rounded bg-gray-50">✕ 關閉視窗</button>
+                </div>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 bg-gray-50">
-                <ul id="sortableList" class="space-y-2">
-                    </ul>
+            
+            <div class="flex-1 flex overflow-hidden bg-gray-50">
+                <div class="w-64 bg-gray-100 p-3 border-r overflow-y-auto space-y-2">
+                    <h4 class="text-xs font-bold text-gray-500 pb-1 border-b">📜 歷史排序紀錄 (右鍵可刪)</h4>
+                    <div id="historyButtonsContainer" class="space-y-1.5">
+                        </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4">
+                    <ul id="sortableList" class="space-y-2">
+                        </ul>
+                </div>
             </div>
+            
             <div class="p-4 border-t bg-white flex justify-end space-x-3">
-                <button onclick="closeSortModal()" class="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700">取消</button>
+                <button onclick="closeSortModal()" class="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700">關閉</button>
                 <button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md font-medium text-xs shadow">
-                    💾 儲存排序並匯出文字內容 (自動複製)
+                    💾 儲存排序並匯出文字內容 (自動複製且不關閉)
                 </button>
             </div>
-        </div>
-    </div>
-
-    <div id="historyModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-2xl max-h-[70vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="bg-gray-100 p-3 border-b flex justify-between items-center">
-                <h3 class="text-sm font-bold text-gray-800">📜 歷史匯出排序紀錄</h3>
-                <button onclick="toggleHistoryModal()" class="text-gray-400 hover:text-gray-600 font-bold">＆times;</button>
-            </div>
-            <div class="flex-1 overflow-y-auto p-3 text-xs space-y-3" id="historyContainer">
-                </div>
         </div>
     </div>
 
@@ -205,6 +213,7 @@
         let exportHistory = JSON.parse(localStorage.getItem('prExportHistory')) || [];
         let currentId = newsDatabase.length > 0 ? Math.max(...newsDatabase.map(item => item.id)) + 1 : 1;
         let filteredNewsResult = [];
+        let sortableInstance = null;
 
         window.onload = function() {
             document.getElementById('eventTheme').value = localStorage.getItem('prEventTheme') || "";
@@ -217,17 +226,21 @@
             localStorage.setItem('prEventTheme', document.getElementById('eventTheme').value);
         }
 
-        // 匯入單筆新聞
-        function importNews() {
-            const date = document.getElementById('newsDate').value;
-            const type = document.getElementById('newsType').value;
-            const media = document.getElementById('mediaName').value.trim();
-            const title = document.getElementById('newsTitle').value.trim();
-            const link = document.getElementById('newsLink').value.trim();
-            const reporter = document.getElementById('reporter').value.trim();
-            const keywords = document.getElementById('keywords').value.trim();
+        function toggleInputModal(show) {
+            const modal = document.getElementById('inputModal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
 
-            // 新增防呆：如果標題是空白的，就完全不匯入
+        function importNews() {
+            const date = document.getElementById('inputModal').querySelector('#newsDate').value;
+            const type = document.getElementById('inputModal').querySelector('#newsType').value;
+            const media = document.getElementById('inputModal').querySelector('#mediaName').value.trim();
+            const title = document.getElementById('inputModal').querySelector('#newsTitle').value.trim();
+            const link = document.getElementById('inputModal').querySelector('#newsLink').value.trim();
+            const reporter = document.getElementById('inputModal').querySelector('#reporter').value.trim();
+            const keywords = document.getElementById('inputModal').querySelector('#keywords').value.trim();
+
             if (!title) {
                 alert("【匯入失敗】報導標題為必填項目，請輸入標題！");
                 return;
@@ -256,19 +269,22 @@
             saveToLocalStorage();
             renderDatabase();
             updateCounters();
-            clearInputs();
+            
+            document.getElementById('inputModal').querySelector('#mediaName').value = "";
+            document.getElementById('inputModal').querySelector('#newsTitle').value = "";
+            document.getElementById('inputModal').querySelector('#newsLink').value = "";
+            document.getElementById('inputModal').querySelector('#reporter').value = "";
+            document.getElementById('inputModal').querySelector('#keywords').value = "";
         }
 
-        // 重新渲染資料庫 (完美優化列高與右鍵選單)
         function renderDatabase() {
             const tbody = document.getElementById('databaseBody');
             tbody.innerHTML = "";
 
             newsDatabase.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 transition border-b border-gray-100 h-9"; // 固定 h-9 控制緊湊列高
+                tr.className = "hover:bg-gray-50 transition border-b border-gray-100 h-9";
                 
-                // 網址縮減優化：超過寬度自動變 ...
                 let linkDisplay = item.link;
                 if (item.link.startsWith('http')) {
                     linkDisplay = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline block truncate" title="${item.link}">${item.link}</a>`;
@@ -295,16 +311,15 @@
             });
         }
 
-        // 右鍵編輯文字欄位功能
         function handleCellRightClick(e, id, field) {
-            e.preventDefault(); // 阻擋瀏覽器預設右鍵選單
+            e.preventDefault();
             const item = newsDatabase.find(data => data.id === id);
             if (!item) return;
 
             let fieldName = "";
             switch(field) {
                 case 'date': fieldName = "收錄日期"; break;
-                case 'type': fieldName = "報導類型 (請填：網路、報紙、影音 或 雜誌)"; break;
+                case 'type': fieldName = "報導類型 (網路、報紙、影音、雜誌)"; break;
                 case 'media': fieldName = "媒體名稱"; break;
                 case 'title': fieldName = "報導標題"; break;
                 case 'link': fieldName = "報導網址或新聞版位"; break;
@@ -326,9 +341,8 @@
             }
         }
 
-        // 右鍵刪除功能 (綁在編號上)
         function handleIdRightClick(e, id) {
-            e.preventDefault(); // 阻擋右鍵
+            e.preventDefault();
             if (confirm(`❓ 是否刪除此筆資料？(編號: ${id})`)) {
                 newsDatabase = newsDatabase.filter(item => item.id !== id);
                 saveToLocalStorage();
@@ -357,14 +371,6 @@
             document.getElementById('count-total').innerText = newsDatabase.length;
         }
 
-        function clearInputs() {
-            document.getElementById('mediaName').value = "";
-            document.getElementById('newsTitle').value = "";
-            document.getElementById('newsLink').value = "";
-            document.getElementById('reporter').value = "";
-            document.getElementById('keywords').value = "";
-        }
-
         function saveToLocalStorage() {
             localStorage.setItem('prNewsDatabase', JSON.stringify(newsDatabase));
             localStorage.setItem('prExportHistory', JSON.stringify(exportHistory));
@@ -382,7 +388,7 @@
 
         // ================= 專案 匯出 / 匯入 =================
         function exportProject() {
-            const dataStr = JSON.stringify({ theme: document.getElementById('eventTheme').value, database: newsDatabase });
+            const dataStr = JSON.stringify({ theme: document.getElementById('eventTheme').value, database: newsDatabase, history: exportHistory });
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -400,6 +406,7 @@
                     const data = JSON.parse(evt.target.result);
                     if (data.database) {
                         newsDatabase = data.database;
+                        exportHistory = data.history || [];
                         document.getElementById('eventTheme').value = data.theme || "";
                         currentId = newsDatabase.length > 0 ? Math.max(...newsDatabase.map(item => item.id)) + 1 : 1;
                         saveTheme(); saveToLocalStorage(); renderDatabase(); updateCounters();
@@ -437,11 +444,9 @@
                     if (!lines[i].trim()) continue;
                     const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                     
-                    // 核心修正 1：檢查標題欄位（第4個索引）是否存在，若無標題，絕對不匯入
                     const csvTitle = cols[4];
                     if (!csvTitle || csvTitle === "報導標題" || csvTitle === "未填") continue;
 
-                    // 核心修正 2：依據現有的 DATA BASE 重新往後編號 (使用 currentId++)
                     newsDatabase.push({
                         id: currentId++,
                         date: cols[1] || "未填",
@@ -455,14 +460,12 @@
                     loadedCount++;
                 }
                 saveToLocalStorage(); renderDatabase(); updateCounters();
-                alert(`成功從 Excel(CSV) 重新編號並匯入 ${loadedCount} 筆有效報導！(已自動跳過空白列)`);
+                alert(`成功從 Excel(CSV) 重新編號並匯入 ${loadedCount} 筆有效報導！`);
             };
             reader.readAsText(file, "UTF-8");
         }
 
         // ================= 第二步與拖曳彈出視窗功能 =================
-        let sortableInstance = null;
-
         function filterAndOpenSortModal() {
             const startId = parseInt(document.getElementById('startId').value);
             const endId = parseInt(document.getElementById('endId').value);
@@ -479,10 +482,23 @@
 
             if (filteredNewsResult.length === 0) return alert("沒有找到符合條件的新聞報導！");
 
+            // 預先帶入今天日期跟目前時間方便使用者修改
+            const now = new Date();
+            const MM = String(now.getMonth() + 1).padStart(2, '0');
+            const DD = String(now.getDate()).padStart(2, '0');
+            document.getElementById('lineReportDate').value = MM + DD;
+            document.getElementById('lineReportTime').value = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            renderSortableList(filteredNewsResult);
+            renderHistoryButtons();
+            document.getElementById('sortModal').classList.remove('hidden');
+        }
+
+        function renderSortableList(dataList) {
             const sortList = document.getElementById('sortableList');
             sortList.innerHTML = "";
 
-            filteredNewsResult.forEach(item => {
+            dataList.forEach(item => {
                 const li = document.createElement('li');
                 li.className = "bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between cursor-move hover:border-indigo-400 transition";
                 li.setAttribute('data-id', item.id);
@@ -492,7 +508,7 @@
                         <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">原序號 ${item.id}</span>
                         <span class="px-1.5 py-0.5 rounded text-[10px] ${getTypeClass(item.type)}">${item.type}</span>
                         <span class="font-bold text-xs text-indigo-900">${item.media}</span>
-                        <span class="text-xs font-medium max-w-md truncate" title="${item.title}">${item.title}</span>
+                        <span class="text-xs font-medium max-w-md truncate" title="${item.title}">${item.title} <span class="text-gray-400 font-normal">（記者：${item.reporter}）</span></span>
                     </div>
                     <div class="text-[11px] text-gray-400">${item.date}</div>
                 `;
@@ -501,8 +517,49 @@
 
             if (sortableInstance) sortableInstance.destroy();
             sortableInstance = new Sortable(sortList, { animation: 150 });
+        }
 
-            document.getElementById('sortModal').classList.remove('hidden');
+        function renderHistoryButtons() {
+            const container = document.getElementById('historyButtonsContainer');
+            container.innerHTML = "";
+            
+            const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
+            const currentHistory = exportHistory.filter(h => h.theme === currentTheme);
+
+            if (currentHistory.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 text-[11px] text-center py-2">目前尚無此活動的歷史排序。</p>`;
+                return;
+            }
+
+            currentHistory.forEach((h, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-white border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 p-2 rounded text-[11px] font-medium transition block text-gray-700 shadow-sm truncate";
+                btn.innerText = `⏱️ 紀錄 ${currentHistory.length - idx} (${h.count}則) - ${h.timeOnly}`;
+                btn.title = `點擊載入此排序結果 / 右鍵可刪除此紀錄`;
+                
+                btn.onclick = function() {
+                    const loadedData = h.sortedIds.map(id => newsDatabase.find(item => item.id === id)).filter(Boolean);
+                    if (loadedData.length > 0) {
+                        renderSortableList(loadedData);
+                        if (h.reportDate) document.getElementById('lineReportDate').value = h.reportDate;
+                        if (h.reportTime) document.getElementById('lineReportTime').value = h.reportTime;
+                        alert(`已成功載入歷史紀錄 ${currentHistory.length - idx} 的排序結果！`);
+                    } else {
+                        alert("部分新聞已被您從資料庫刪除，無法完整還原。");
+                    }
+                };
+
+                btn.oncontextmenu = function(e) {
+                    e.preventDefault();
+                    if (confirm(`❓ 確定要刪除這條歷史排序紀錄嗎？`)) {
+                        exportHistory = exportHistory.filter(item => item.timestamp !== h.timestamp);
+                        saveToLocalStorage();
+                        renderHistoryButtons();
+                    }
+                };
+
+                container.appendChild(btn);
+            });
         }
 
         function closeSortModal() {
@@ -511,66 +568,94 @@
 
         function saveSortAndExport() {
             const currentOrderIds = Array.from(document.getElementById('sortableList').children).map(li => parseInt(li.getAttribute('data-id')));
-            const finalSortedData = currentOrderIds.map(id => newsDatabase.find(item => item.id === id));
+            const finalSortedData = currentOrderIds.map(id => newsDatabase.find(item => item.id === id)).filter(Boolean);
 
+            const rDate = document.getElementById('lineReportDate').value.trim() || "0000";
+            const rTime = document.getElementById('lineReportTime').value.trim() || "00:00";
+
+            const now = new Date();
             const record = {
-                timestamp: new Date().toLocaleString(),
+                timestamp: now.toLocaleString(),
+                timeOnly: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 theme: document.getElementById('eventTheme').value || "未命名活動",
                 count: finalSortedData.length,
-                titles: finalSortedData.map(item => `[${item.media}] ${item.title}`)
+                sortedIds: currentOrderIds,
+                reportDate: rDate,
+                reportTime: rTime
             };
+            
             exportHistory.unshift(record);
             saveToLocalStorage();
+            renderHistoryButtons();
 
-            generateTextOutput(finalSortedData);
+            // 📢 核心更新：呼叫終極公關回報格式生成器
+            generateTextOutput(finalSortedData, rDate, rTime);
         }
 
-        // 生成最後文字並複製
-        function generateTextOutput(dataList) {
+        // 🆕 終極特調：公關專用 LINE 回報文字格式生成器
+        function generateTextOutput(dataList, rDate, rTime) {
             let theme = document.getElementById('eventTheme').value || "未命名活動";
-            
-            // 💡 期待您提供最終格式，這裡先預留生成邏輯
-            let outputText = `【${theme}】成果回報\n`;
-            outputText += `本次共收錄精選新聞 ${dataList.length} 則，排序如下：\n\n`;
-            
-            dataList.forEach((item, index) => {
-                outputText += `${index + 1}. 【${item.media}】${item.title}\n`;
-                outputText += `   - 連結/版位：${item.link}\n\n`;
-            });
+            let totalCount = dataList.length;
 
-            navigator.clipboard.writeText(outputText).then(() => {
-                alert(`✨ 排序已儲存！\n精選內容已『自動複製到你的剪貼簿』，可以直接去 LINE 貼上給主管囉！`);
-                closeSortModal();
-            }).catch(err => {
-                alert("自動複製失敗，請手動複製。");
-            });
-        }
+            // 1. 各媒體類型計數 (依據當前排序的清單)
+            let paperList = dataList.filter(item => item.type === '報紙');
+            let videoList = dataList.filter(item => item.type === '影音');
+            let webList = dataList.filter(item => item.type === '網路');
+            let magazineList = dataList.filter(item => item.type === '雜誌');
 
-        // 歷史紀錄控制
-        function toggleHistoryModal() {
-            const modal = document.getElementById('historyModal');
-            if (modal.classList.contains('hidden')) {
-                const container = document.getElementById('historyContainer');
-                if (exportHistory.length === 0) {
-                    container.innerHTML = `<p class="text-gray-400 text-center py-4">目前還沒有任何匯出紀錄喔。</p>`;
-                } else {
-                    container.innerHTML = exportHistory.map(h => `
-                        <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-                            <div class="flex justify-between font-bold text-gray-700 mb-1">
-                                <span>📌 ${h.theme} (${h.count}則)</span>
-                                <span class="text-gray-400 font-normal">${h.timestamp}</span>
-                            </div>
-                            <ul class="list-disc list-inside text-gray-500 pl-1 space-y-0.5">
-                                ${h.titles.slice(0, 3).map(t => `<li class="truncate">${t}</li>`).join('')}
-                                ${h.titles.length > 3 ? `<li>...等其他 ${h.titles.length - 3} 篇報導</li>` : ''}
-                            </ul>
-                        </div>
-                    `).join('');
-                }
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
+            // 2. 組成前半段的加總統計欄位（0則自動隱藏）
+            let outputText = `${rDate}【${theme}】(${rTime})新增${totalCount}則相關報導，請參考\n\n`;
+            
+            if (paperList.length > 0)    outputText += `報紙：${paperList.length}則(圖檔如附)\n`;
+            if (videoList.length > 0)    outputText += `影音：${videoList.length}則\n`;
+            if (webList.length > 0)      outputText += `網路：${webList.length}則\n`;
+            if (magazineList.length > 0) outputText += `雜誌：${magazineList.length}則\n`;
+            
+            outputText += `\n`;
+
+            // 3. 依序產生明細（順序：報紙 → 影音 → 網路 → 雜誌），同樣 0 則自動隱藏
+            
+            // ■ 報紙 (格式：1.媒體名稱_報導版位_新聞標題)
+            if (paperList.length > 0) {
+                outputText += `■ 報紙：${paperList.length}則(圖檔如附)\n`;
+                paperList.forEach((item, index) => {
+                    outputText += `${index + 1}.${item.media}_${item.link}_${item.title}\n`;
+                });
+                outputText += `\n`;
             }
+
+            // ■ 影音 (格式：1.新聞標題_媒體名稱 / 換行 網址)
+            if (videoList.length > 0) {
+                outputText += `■ 影音：${videoList.length}則\n`;
+                videoList.forEach((item, index) => {
+                    outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`;
+                });
+            }
+
+            // ■ 網路 (格式：1.新聞標題_媒體名稱 / 換行 網址)
+            if (webList.length > 0) {
+                outputText += `■ 網路：${webList.length}則\n`;
+                webList.forEach((item, index) => {
+                    outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`;
+                });
+            }
+
+            // ■ 雜誌 (格式：1.新聞標題_媒體名稱 / 換行 網址/版位)
+            if (magazineList.length > 0) {
+                outputText += `■ 雜誌：${magazineList.length}則\n`;
+                magazineList.forEach((item, index) => {
+                    outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`;
+                });
+            }
+
+            outputText += `------------------`;
+
+            // 複製到剪貼簿
+            navigator.clipboard.writeText(outputText).then(() => {
+                alert(`✨ 成果回報文字生成成功！\n\n已完全依照指定格式統計加總，並『自動複製到你的剪貼簿』了！\n現在你可以直接去 LINE 貼上 (Ctrl+V) 回報給主管囉！`);
+            }).catch(err => {
+                alert("自動複製失敗，請手動複製內容。");
+            });
         }
     </script>
 </body>
