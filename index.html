@@ -4,22 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>公關新聞收錄系統</title>
+    <!-- Tailwind CSS 介面美化 -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SortableJS 實作最流暢的滑鼠拖曳排序功能 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen p-4 font-sans text-gray-800">
 
     <div class="max-w-7xl mx-auto space-y-4">
         
+        <!-- 主要工作區 -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             
+            <!-- 左側：活動主題、統計與專案備份 -->
             <div class="md:col-span-1 space-y-4">
+                <!-- 標題與活動主題整合 -->
                 <div class="bg-indigo-600 text-white p-4 rounded-xl shadow border border-indigo-700">
                     <h1 class="text-lg font-bold mb-2">公關新聞收錄管理系統</h1>
                     <label class="block text-xs font-medium text-indigo-200 mb-1">當前活動主題</label>
                     <input type="text" id="eventTheme" oninput="saveTheme()" placeholder="請輸入活動主題..." class="w-full p-2 border border-indigo-400 bg-indigo-700 text-white placeholder-indigo-300 text-sm rounded-md focus:ring-2 focus:ring-white focus:outline-none">
                 </div>
 
+                <!-- 則數統計與功能按鈕 -->
                 <div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-3">
                     <div class="flex justify-between items-center pb-1 border-b">
                         <h3 class="text-sm font-semibold text-gray-700">收錄則數統計</h3>
@@ -36,10 +42,12 @@
                     
                     <hr class="my-2">
 
+                    <!-- 開啟浮動新增窗格按鈕 -->
                     <button onclick="toggleInputModal(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-2 text-xs font-bold rounded-md shadow transition text-center block">
                         ➕ 開啟新增報導窗格
                     </button>
                     
+                    <!-- 專案備份按鈕 -->
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="exportProject()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium rounded-md border border-blue-200 transition text-center">
                             📤 匯出專案
@@ -55,10 +63,13 @@
                 </div>
             </div>
 
+            <!-- 右側：主要資料表與第二步 -->
             <div class="md:col-span-3 space-y-4">
+                <!-- Data Base 顯示區域 -->
                 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
                     <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE)</h3>
+                        <!-- Excel (CSV) 匯入匯出按鈕 -->
                         <div class="flex space-x-2 text-xs">
                             <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
                                 📊 匯出 Excel (CSV)
@@ -84,11 +95,13 @@
                                 </tr>
                             </thead>
                             <tbody id="databaseBody" class="divide-y divide-gray-100 text-gray-600">
-                                </tbody>
+                                <!-- 資料動態插入 -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
 
+                <!-- 第二步：篩選與排序區 -->
                 <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
                     <h3 class="text-sm font-semibold text-gray-700 mb-3">第二步：篩選主管交辦資料與排序</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
@@ -116,9 +129,10 @@
         </div>
     </div>
 
+    <!-- ================= 🛸 浮動視窗：新增報導資訊 ================= -->
     <div id="inputModal" class="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-40 hidden animate-fade-in">
-        <div class="bg-indigo-600 text-white p-3 rounded-t-2xl flex justify-between items-center cursor-move">
-            <h3 class="text-xs font-bold flex items-center">📝 新增報導資訊 (可對照後方資料庫)</h3>
+        <div class="bg-indigo-600 text-white p-3 rounded-t-2xl flex justify-between items-center">
+            <h3 class="text-xs font-bold flex items-center">📝 新增報導資訊</h3>
             <button onclick="toggleInputModal(false)" class="text-indigo-200 hover:text-white text-xs font-medium bg-indigo-700 px-2 py-0.5 rounded">✕ 關閉</button>
         </div>
         <div class="p-4 space-y-2.5 max-h-[75vh] overflow-y-auto text-xs">
@@ -166,13 +180,16 @@
     </div>
 
 
+    <!-- ================= 🔬 彈出視窗：拖曳排序與匯出 ================= -->
     <div id="sortModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-6xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+            <!-- 頂部標題與新功能欄位區 -->
             <div class="bg-gray-100 p-4 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
                     <h3 class="text-base font-bold text-gray-800">🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
-                    <p class="text-xs text-gray-500">排在最上方的會是最優先的新聞內容</p>
+                    <p class="text-xs text-gray-400">💡 💡 提示：在任一新聞上【點擊滑鼠右鍵】，可選擇單獨從排序移除、或連同 Data Base 一起刪除！</p>
                 </div>
+                <!-- 呈現在LINE上的日期與收錄時間 -->
                 <div class="flex items-center space-x-2 text-xs bg-white p-2 rounded-md border shadow-sm">
                     <div>
                         <label class="block text-[10px] text-gray-400 font-medium">日期 (如:0520)</label>
@@ -186,19 +203,25 @@
                 </div>
             </div>
             
+            <!-- 視窗主體：左側放歷史紀錄，右側放拖曳排序 -->
             <div class="flex-1 flex overflow-hidden bg-gray-50">
+                <!-- 左側：當前專案排序歷史紀錄欄 -->
                 <div class="w-64 bg-gray-100 p-3 border-r overflow-y-auto space-y-2">
                     <h4 class="text-xs font-bold text-gray-500 pb-1 border-b">📜 歷史排序紀錄 (右鍵可刪)</h4>
                     <div id="historyButtonsContainer" class="space-y-1.5">
-                        </div>
+                        <!-- 歷史紀錄按鈕動態生成 -->
+                    </div>
                 </div>
 
+                <!-- 右側：拖曳排序清單 -->
                 <div class="flex-1 overflow-y-auto p-4">
                     <ul id="sortableList" class="space-y-2">
-                        </ul>
+                        <!-- 資料動態插入 -->
+                    </ul>
                 </div>
             </div>
             
+            <!-- 底部按鈕列 -->
             <div class="p-4 border-t bg-white flex justify-end space-x-3">
                 <button onclick="closeSortModal()" class="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700">關閉</button>
                 <button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md font-medium text-xs shadow">
@@ -208,6 +231,7 @@
         </div>
     </div>
 
+    <!-- JavaScript 核心邏輯 -->
     <script>
         let newsDatabase = JSON.parse(localStorage.getItem('prNewsDatabase')) || [];
         let exportHistory = JSON.parse(localStorage.getItem('prExportHistory')) || [];
@@ -500,23 +524,75 @@
 
             dataList.forEach(item => {
                 const li = document.createElement('li');
-                li.className = "bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between cursor-move hover:border-indigo-400 transition";
+                li.className = "bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between cursor-move hover:border-indigo-400 transition select-none";
                 li.setAttribute('data-id', item.id);
+                
+                // 🆕 在排序元件上點右鍵時觸發全新功能：連動刪除 / 排序刪除
+                li.oncontextmenu = function(e) {
+                    handleSortItemRightClick(e, item.id);
+                };
+
                 li.innerHTML = `
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-3 pointer-events-none">
                         <span class="text-gray-400 font-bold text-xs">☰</span>
                         <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">原序號 ${item.id}</span>
                         <span class="px-1.5 py-0.5 rounded text-[10px] ${getTypeClass(item.type)}">${item.type}</span>
                         <span class="font-bold text-xs text-indigo-900">${item.media}</span>
                         <span class="text-xs font-medium max-w-md truncate" title="${item.title}">${item.title} <span class="text-gray-400 font-normal">（記者：${item.reporter}）</span></span>
                     </div>
-                    <div class="text-[11px] text-gray-400">${item.date}</div>
+                    <div class="text-[11px] text-gray-400 pointer-events-none">${item.date}</div>
                 `;
                 sortList.appendChild(li);
             });
 
             if (sortableInstance) sortableInstance.destroy();
             sortableInstance = new Sortable(sortList, { animation: 150 });
+        }
+
+        // 🆕 全新右鍵防護選單：處理排序清單的右鍵刪除行為
+        function handleSortItemRightClick(e, id) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const targetItem = newsDatabase.find(item => item.id === id);
+            const titleSnippet = targetItem ? `【${targetItem.media}】${targetItem.title.substring(0,15)}...` : `編號 ${id}`;
+
+            const promptMsg = `💡 您正在針對排序中的新聞進行右鍵精準操作：\n\n` +
+                              `報導：${titleSnippet}\n` +
+                              `-----------------------------------------------\n` +
+                              `請輸入對應號碼進行操作：\n` +
+                              `輸入 1 : 【僅從本次排序中移除】(不影響 Data Base 資料庫)\n` +
+                              `輸入 2 : 【從 Data Base 完全刪除】(此筆新聞將徹底清除消失)\n\n` +
+                              `（若不小心點到，按「取消」或關閉即可）`;
+
+            const action = prompt(promptMsg);
+
+            if (action === '1') {
+                // 僅從當前的 HTML 拖曳清單中移除
+                const currentOrderIds = Array.from(document.getElementById('sortableList').children)
+                                             .map(li => parseInt(li.getAttribute('data-id')))
+                                             .filter(listId => listId !== id);
+                const updatedList = currentOrderIds.map(listId => newsDatabase.find(item => item.id === listId)).filter(Boolean);
+                renderSortableList(updatedList);
+                alert("已成功將該筆報導從「本次回報排序」中隱藏。");
+            } 
+            else if (action === '2') {
+                if (confirm(`⚠️ 嚴重警告！您即將從【Data Base 總資料庫】徹底刪除此筆資料(編號: ${id})，刪除後將無法還原。\n確定執行嗎？`)) {
+                    // 1. 從總資料庫移除
+                    newsDatabase = newsDatabase.filter(item => item.id !== id);
+                    saveToLocalStorage();
+                    renderDatabase();
+                    updateCounters();
+                    
+                    // 2. 同步刷新排序清單
+                    const currentOrderIds = Array.from(document.getElementById('sortableList').children)
+                                                 .map(li => parseInt(li.getAttribute('data-id')))
+                                                 .filter(listId => listId !== id);
+                    const updatedList = currentOrderIds.map(listId => newsDatabase.find(item => item.id === listId)).filter(Boolean);
+                    renderSortableList(updatedList);
+                    alert("該報導已徹底從總資料庫與排序畫面移除。");
+                }
+            }
         }
 
         function renderHistoryButtons() {
@@ -588,22 +664,22 @@
             saveToLocalStorage();
             renderHistoryButtons();
 
-            // 📢 核心更新：呼叫終極公關回報格式生成器
+            // 📢 呼叫公關回報格式生成器
             generateTextOutput(finalSortedData, rDate, rTime);
         }
 
-        // 🆕 終極特調：公關專用 LINE 回報文字格式生成器
+        // 公關專用 LINE 回報文字格式生成器
         function generateTextOutput(dataList, rDate, rTime) {
             let theme = document.getElementById('eventTheme').value || "未命名活動";
             let totalCount = dataList.length;
 
-            // 1. 各媒體類型計數 (依據當前排序的清單)
+            // 各媒體類型計數 (依據當前排序的清單)
             let paperList = dataList.filter(item => item.type === '報紙');
             let videoList = dataList.filter(item => item.type === '影音');
             let webList = dataList.filter(item => item.type === '網路');
             let magazineList = dataList.filter(item => item.type === '雜誌');
 
-            // 2. 組成前半段的加總統計欄位（0則自動隱藏）
+            // 組成前半段的加總統計欄位（0則自動隱藏）
             let outputText = `${rDate}【${theme}】(${rTime})新增${totalCount}則相關報導，請參考\n\n`;
             
             if (paperList.length > 0)    outputText += `報紙：${paperList.length}則(圖檔如附)\n`;
@@ -613,7 +689,7 @@
             
             outputText += `\n`;
 
-            // 3. 依序產生明細（順序：報紙 → 影音 → 網路 → 雜誌），同樣 0 則自動隱藏
+            // 依序產生明細（順序：報紙 → 影音 → 網路 → 雜誌），同樣 0 則自動隱藏
             
             // ■ 報紙 (格式：1.媒體名稱_報導版位_新聞標題)
             if (paperList.length > 0) {
