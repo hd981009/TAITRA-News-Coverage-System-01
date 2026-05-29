@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公關新聞收錄系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-6 font-sans">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <header class="bg-indigo-600 text-white p-4 rounded-xl shadow-md">
+            <h1 class="text-2xl font-bold">公關新聞收錄管理系統</h1>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            
+            <div class="md:col-span-1 space-y-4">
+                <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">活動主題</label>
+                    <input type="text" id="eventTheme" placeholder="請輸入活動主題..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b">收錄則數統計</h3>
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex justify-between"><span>報紙：</span><span id="count-newspaper" class="font-bold text-indigo-600">0</span></div>
+                        <div class="flex justify-between"><span>影音：</span><span id="count-video" class="font-bold text-indigo-600">0</span></div>
+                        <div class="flex justify-between"><span>網路：</span><span id="count-web" class="font-bold text-indigo-600">0</span></div>
+                        <div class="flex justify-between"><span>雜誌：</span><span id="count-magazine" class="font-bold text-indigo-600">0</span></div>
+                        <hr class="my-2">
+                        <div class="flex justify-between text-base font-bold text-gray-800"><span>總共：</span><span id="count-total">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-3 space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-200">
+                    <h3 class="text-base font-semibold text-gray-800 mb-4">新增報導資訊</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">收錄日期</label>
+                            <input type="date" id="newsDate" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">報導類型</label>
+                            <select id="newsType" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                                <option value="網路">網路</option>
+                                <option value="報紙">報紙</option>
+                                <option value="影音">影音</option>
+                                <option value="雜誌">雜誌</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">媒體名稱</label>
+                            <input type="text" id="mediaName" placeholder="例如：中央社" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">報導標題</label>
+                            <input type="text" id="newsTitle" placeholder="請輸入新聞標題" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">報導網址或報紙版位</label>
+                            <input type="text" id="newsLink" placeholder="https://... 或 A3版" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">記者名字</label>
+                            <input type="text" id="reporter" placeholder="陳大文（若無可不填）" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">關鍵字（可用逗號隔開）</label>
+                            <input type="text" id="keywords" placeholder="例如：新產品發表, 淨零碳排" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="importNews()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md font-medium text-sm shadow transition">匯入資料</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+                    <div class="p-4 bg-gray-100 border-b border-gray-200">
+                        <h3 class="text-base font-semibold text-gray-800">新聞資料庫 (DATA BASE)</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 font-medium">
+                                    <th class="p-3 w-16 text-center">編號</th>
+                                    <th class="p-3 w-28">收錄日期</th>
+                                    <th class="p-3 w-20">類型</th>
+                                    <th class="p-3">媒體名稱</th>
+                                    <th class="p-3">報導標題</th>
+                                    <th class="p-3">連結/版位</th>
+                                    <th class="p-3 w-20">記者</th>
+                                    <th class="p-3">關鍵字</th>
+                                </tr>
+                            </thead>
+                            <tbody id="databaseBody" class="divide-y divide-gray-200 text-gray-700">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow border border-gray-200">
+            <h3 class="text-base font-semibold text-gray-800 mb-4">第二步：篩選主管交辦資料</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">起始序號</label>
+                    <input type="number" id="startId" placeholder="1" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">結束序號</label>
+                    <input type="number" id="endId" placeholder="10" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">關鍵字篩選（選填）</label>
+                    <input type="text" id="filterKeyword" placeholder="輸入要篩選的關鍵字" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+                </div>
+                <div>
+                    <button onclick="filterData()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md font-medium text-sm shadow transition">
+                        篩選並預覽資料
+                    </button>
+                </div>
+            </div>
+
+            <div id="filterSummary" class="mt-4 text-sm text-gray-600 hidden bg-emerald-50 p-3 rounded-md border border-emerald-200">
+                </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 存放所有收錄新聞的陣列
+        let newsDatabase = [];
+        let currentId = 1;
+
+        // 預設今日日期
+        document.getElementById('newsDate').valueAsDate = new Date();
+
+        // 匯入按鈕功能
+        function importNews() {
+            // 抓取欄位數值
+            const date = document.getElementById('newsDate').value;
+            const type = document.getElementById('newsType').value;
+            const media = document.getElementById('mediaName').value.trim();
+            const title = document.getElementById('newsTitle').value.trim();
+            const link = document.getElementById('newsLink').value.trim();
+            const reporter = document.getElementById('reporter').value.trim();
+            const keywords = document.getElementById('keywords').value.trim();
+
+            // 防呆 1：如果所有欄位都沒寫，則不處理
+            if (!date && !media && !title && !link && !reporter && !keywords) {
+                return; 
+            }
+
+            // 防呆 2：檢查網址/版位是否重複 (只有在有填寫 link 的狀況下才檢查)
+            if (link !== "") {
+                const isDuplicate = newsDatabase.some(item => item.link === link);
+                if (isDuplicate) {
+                    alert(`【重複收錄警告】此網址或版位（${link}）已經存在於資料庫中！`);
+                    return;
+                }
+            }
+
+            // 建立單筆資料物件
+            const newsItem = {
+                id: currentId++,
+                date: date || "未填",
+                type: type,
+                media: media || "未填",
+                title: title || "未填",
+                link: link || "未填",
+                reporter: reporter || "未填",
+                keywords: keywords || ""
+            };
+
+            // 塞入資料庫並更新畫面
+            newsDatabase.push(newsItem);
+            renderDatabase();
+            updateCounters();
+            clearInputs();
+        }
+
+        // 重新渲染資料庫表格
+        function renderDatabase() {
+            const tbody = document.getElementById('databaseBody');
+            tbody.innerHTML = "";
+
+            newsDatabase.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition";
+                
+                // 判斷連結是否為網址，是的話加上超連結
+                let linkDisplay = item.link;
+                if (item.link.startsWith('http')) {
+                    linkDisplay = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline break-all">${item.link}</a>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-3 text-center font-medium text-gray-500">${item.id}</td>
+                    <td class="p-3 whitespace-nowrap">${item.date}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-medium ${getTypeClass(item.type)}">${item.type}</span></td>
+                    <td class="p-3 font-medium">${item.media}</td>
+                    <td class="p-3 max-w-xs truncate" title="${item.title}">${item.title}</td>
+                    <td class="p-3 max-w-xs text-xs">${linkDisplay}</td>
+                    <td class="p-3">${item.reporter}</td>
+                    <td class="p-3 text-xs text-gray-500">${item.keywords}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 依據報導類型給予不同標籤顏色
+        function getTypeClass(type) {
+            switch(type) {
+                case '報紙': return 'bg-orange-100 text-orange-800';
+                case '影音': return 'bg-red-100 text-red-800';
+                case '網路': return 'bg-blue-100 text-blue-800';
+                case '雜誌': return 'bg-green-100 text-green-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // 更新左側計數器
+        function updateCounters() {
+            const counts = { '報紙': 0, '影音': 0, '網路': 0, '雜誌': 0 };
+            
+            newsDatabase.forEach(item => {
+                if (counts[item.type] !== undefined) {
+                    counts[item.type]++;
+                }
+            });
+
+            document.getElementById('count-newspaper').innerText = counts['報紙'];
+            document.getElementById('count-video').innerText = counts['影音'];
+            document.getElementById('count-web').innerText = counts['網路'];
+            document.getElementById('count-magazine').innerText = counts['雜誌'];
+            document.getElementById('count-total').innerText = newsDatabase.length;
+        }
+
+        // 清空輸入框（保留日期與類型預設值）
+        function clearInputs() {
+            document.getElementById('mediaName').value = "";
+            document.getElementById('newsTitle').value = "";
+            document.getElementById('newsLink').value = "";
+            document.getElementById('reporter').value = "";
+            document.getElementById('keywords').value = "";
+        }
+
+        // 暫存篩選後的資料，提供下一步驟使用
+        let filteredNewsResult = [];
+
+        // 第二步：篩選按鈕功能
+        function filterData() {
+            const startId = parseInt(document.getElementById('startId').value);
+            const endId = parseInt(document.getElementById('endId').value);
+            const keyword = document.getElementById('filterKeyword').value.trim();
+
+            if (newsDatabase.length === 0) {
+                alert("目前資料庫中沒有任何資料可以篩選喔！");
+                return;
+            }
+
+            // 進行篩選
+            filteredNewsResult = newsDatabase.filter(item => {
+                // 1. 檢查序號區間 (若沒填則預設通過)
+                const matchStart = !isNaN(startId) ? item.id >= startId : true;
+                const matchEnd = !isNaN(endId) ? item.id <= endId : true;
+                
+                // 2. 檢查關鍵字篩選 (包含在該則新聞的關鍵字欄位中)
+                const matchKeyword = keyword !== "" ? item.keywords.includes(keyword) : true;
+
+                return matchStart && matchEnd && matchKeyword;
+            });
+
+            // 顯示預覽提示
+            const summaryDiv = document.getElementById('filterSummary');
+            summaryDiv.classList.remove('hidden');
+            summaryDiv.innerHTML = `<strong>篩選成功！</strong> 共有 <b>${filteredNewsResult.length}</b> 篇報導符合條件（區間：${startId || 1} ~ ${endId || currentId-1}，關鍵字：${keyword || '無'}）。已為您準備好進行後續排序與匯出。`;
+        }
+    </script>
+</body>
+</html>
