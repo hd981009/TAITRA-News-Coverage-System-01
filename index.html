@@ -170,7 +170,8 @@
         <div class="bg-white w-full max-w-6xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
             <div class="bg-gray-100 p-3 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
-                    <h3 class="text-sm font-bold text-gray-800">🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
+                    <h3 class="text-base font-bold text-gray-800">🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
+                    <p class="text-xs text-gray-400">💡 提示：在任一新聞上【點擊滑鼠右鍵】，可選擇單獨從排序移除、或連同 Data Base 一起刪除！</p>
                 </div>
                 <div class="flex items-center space-x-2 text-xs bg-white p-1.5 rounded-md border shadow-sm flex-wrap gap-y-1">
                     <div>
@@ -611,13 +612,12 @@
 
             const titleSnippet = `【${targetItem.media}】${targetItem.title.substring(0,15)}...`;
 
-            const promptMsg = `💡 您正在針對排序中的新聞進行右鍵精準操作：\n\n` +
+            const promptMsg = `💡 您正在針對排序中的新聞進行刪除作業：\n\n` +
                               `報導：${titleSnippet}\n` +
                               `-----------------------------------------------\n` +
                               `請輸入對應號碼進行操作：\n` +
-                              `輸入 1 : 【僅從本次排序中移除】(不影響 Data Base 資料庫)\n` +
-                              `輸入 2 : 【從 Data Base 完全刪除】(總庫將重新自動排列順號！)\n\n` +
-                              `（若不小心點到，按「取消」或關閉即可）`;
+                              `輸入 1 : 【僅從本次排序中移除】\n` +
+                              `輸入 2 : 【從 Data Base 完全刪除】\n\n`;
 
             const action = prompt(promptMsg);
 
@@ -626,7 +626,7 @@
                 alert("已成功將該筆報導從「本次回報排序」中隱藏。");
             } 
             else if (action === '2') {
-                if (confirm(`⚠️ 嚴重警告！您即將從【Data Base 總資料庫】徹底刪除此筆資料，刪除後系統會「重排所有序號」且無法復原。\n確定執行嗎？`)) {
+                if (confirm(`⚠️ 嚴重警告！您即將從【Data Base 總資料庫】刪除此筆資料。\n確定執行嗎？`)) {
                     newsDatabase = newsDatabase.filter(item => !(item.title === titleKey && item.media === mediaKey));
                     reorderDatabaseIds();
                     saveToLocalStorage();
@@ -634,7 +634,7 @@
                     updateCounters();
                     
                     e.target.closest('li').remove();
-                    alert("該報導已徹底從總資料庫移除，且總庫已完成重新順號！");
+                    alert("該報導已由DataBase移除");
                 }
             }
         }
@@ -772,7 +772,7 @@
             outputText += `------------------`;
 
             navigator.clipboard.writeText(outputText).then(() => {
-                alert(`✨ 成果回報文字生成成功！\n\n已完全依照指定格式統計加總，並『自動複製到你的剪貼簿』了！\n現在你可以直接去 LINE 貼上 (Ctrl+V) 回報給主管囉！`);
+                alert(`✨ 成果回報文字生成成功！\n\n已『自動複製到你的剪貼簿』！\n可以直接去 LINE 貼上 (Ctrl+V) 回報給主管囉！`);
             }).catch(err => {
                 alert("自動複製失敗，請手動複製內容。");
             });
