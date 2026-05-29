@@ -90,7 +90,7 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-3">第二步：篩選主管交辦資料與排序</h3>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">第二步：篩選報導與排序</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <div>
                             <label class="block text-xs font-medium text-gray-400 mb-1">起始序號</label>
@@ -170,7 +170,7 @@
         <div class="bg-white w-full max-w-6xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
             <div class="bg-gray-100 p-4 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
-                    <h3 class="text-base font-bold text-gray-800">🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
+                    <h3 class="text-base font-bold text-gray-800">🔬 報導排序（滑鼠上下拖曳）</h3>
                     <p class="text-xs text-gray-400">💡 提示：在任一新聞上【點擊滑鼠右鍵】，可選擇單獨從排序移除、或連同 Data Base 一起刪除！</p>
                 </div>
                 <div class="flex items-center space-x-2 text-xs bg-white p-2 rounded-md border shadow-sm">
@@ -197,7 +197,6 @@
                     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                         <div class="bg-gray-100 border-b border-gray-200 flex text-[11px] text-gray-500 font-semibold py-1.5 px-3 select-none">
                             <div class="w-8 text-center">拖曳</div>
-                            <div class="w-16">原序號</div>
                             <div class="w-16">類型</div>
                             <div class="w-28">媒體名稱</div>
                             <div class="flex-1">報導標題 / 記者</div>
@@ -212,7 +211,7 @@
             <div class="p-4 border-t bg-white flex justify-end space-x-3">
                 <button onclick="closeSortModal()" class="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700">關閉</button>
                 <button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md font-medium text-xs shadow">
-                    💾 儲存排序並匯出文字內容 (自動複製且不關閉)
+                    💾 儲存排序並匯出文字內容
                 </button>
             </div>
         </div>
@@ -321,6 +320,14 @@
             });
         }
 
+        // 🆕 核心優化：刪除資料後自動「重新順號」的共用函式
+        function reorderDatabaseIds() {
+            newsDatabase.forEach((item, index) => {
+                item.id = index + 1; // 從 1 開始重新給予編號
+            });
+            currentId = newsDatabase.length + 1; // 更新下一筆新增時的預設序號
+        }
+
         function handleCellRightClick(e, id, field) {
             e.preventDefault();
             const item = newsDatabase.find(data => data.id === id);
@@ -355,6 +362,7 @@
             e.preventDefault();
             if (confirm(`❓ 是否刪除此筆資料？(編號: ${id})`)) {
                 newsDatabase = newsDatabase.filter(item => item.id !== id);
+                reorderDatabaseIds(); // 執行重新順號
                 saveToLocalStorage();
                 renderDatabase();
                 updateCounters();
@@ -418,7 +426,7 @@
                         newsDatabase = data.database;
                         exportHistory = data.history || [];
                         document.getElementById('eventTheme').value = data.theme || "";
-                        currentId = newsDatabase.length > 0 ? Math.max(...newsDatabase.map(item => item.id)) + 1 : 1;
+                        reorderDatabaseIds(); // 確保匯入後也是完美順號
                         saveTheme(); saveToLocalStorage(); renderDatabase(); updateCounters();
                         alert("專案備份匯入成功！");
                     }
@@ -469,6 +477,7 @@
                     });
                     loadedCount++;
                 }
+                reorderDatabaseIds(); // 重新整理成完美排列的流水號
                 saveToLocalStorage(); renderDatabase(); updateCounters();
                 alert(`成功從 Excel(CSV) 重新編號並匯入 ${loadedCount} 筆有效報導！`);
             };
@@ -492,7 +501,6 @@
 
             if (filteredNewsResult.length === 0) return alert("沒有找到符合條件的新聞報導！");
 
-            // 預先帶入今天日期跟目前時間方便使用者修改
             const now = new Date();
             const MM = String(now.getMonth() + 1).padStart(2, '0');
             const DD = String(now.getDate()).padStart(2, '0');
@@ -504,25 +512,25 @@
             document.getElementById('sortModal').classList.remove('hidden');
         }
 
-        // 🆕 終極優化：將原本的獨立大 Bar 改為「無縫緊密、高密度貼合」的清單行
+        // 🔬 完美緊貼排序清單：已徹底拔除「原序號」欄位與資料列內的序號標籤
         function renderSortableList(dataList) {
             const sortList = document.getElementById('sortableList');
             sortList.innerHTML = "";
 
             dataList.forEach(item => {
                 const li = document.createElement('li');
-                // 緊密排版：去縫隙、極窄上下 Padding (py-1 px-3)、滑鼠懸停淡亮色 bg-indigo-50/40
+                // 利用 title 將資料特徵綁定在 DOM 上，以便後續用屬性查詢，不受重新順號的數字影響
                 li.className = "bg-white flex items-center justify-between border-b border-gray-100 cursor-move hover:bg-indigo-50/60 transition select-none py-1 px-3 text-xs text-gray-700";
-                li.setAttribute('data-id', item.id);
+                li.setAttribute('data-title-key', item.title); 
+                li.setAttribute('data-media-key', item.media);
                 
                 li.oncontextmenu = function(e) {
-                    handleSortItemRightClick(e, item.id);
+                    handleSortItemRightClick(e, item.title, item.media);
                 };
 
                 li.innerHTML = `
                     <div class="flex items-center space-x-3 pointer-events-none flex-1 truncate">
                         <span class="text-gray-300 font-bold w-8 text-center text-sm">☰</span>
-                        <span class="text-gray-400 font-bold w-16 text-left">#${item.id}</span>
                         <div class="w-16 text-left">
                             <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
                         </div>
@@ -540,45 +548,42 @@
             sortableInstance = new Sortable(sortList, { animation: 150 });
         }
 
-        // 右鍵防護選單：處理排序清單的右鍵刪除行為
-        function handleSortItemRightClick(e, id) {
+        // 右鍵防護選單：用標題跟媒體名稱精準定位資料
+        function handleSortItemRightClick(e, titleKey, mediaKey) {
             e.preventDefault();
             e.stopPropagation();
 
-            const targetItem = newsDatabase.find(item => item.id === id);
-            const titleSnippet = targetItem ? `【${targetItem.media}】${targetItem.title.substring(0,15)}...` : `編號 ${id}`;
+            const targetItem = newsDatabase.find(item => item.title === titleKey && item.media === mediaKey);
+            if (!targetItem) return;
 
-            const promptMsg = `💡 您正在針對排序中的新聞進行右鍵精準操作：\n\n` +
+            const titleSnippet = `【${targetItem.media}】${targetItem.title.substring(0,15)}...`;
+
+            const promptMsg = `💡 您正在針對排序中的新聞進行刪除作業：\n\n` +
                               `報導：${titleSnippet}\n` +
                               `-----------------------------------------------\n` +
                               `請輸入對應號碼進行操作：\n` +
-                              `輸入 1 : 【僅從本次排序中移除】(不影響 Data Base 資料庫)\n` +
-                              `輸入 2 : 【從 Data Base 完全刪除】(此筆新聞將徹底清除消失)\n\n` +
-                              `（若不小心點到，按「取消」或關閉即可）`;
+                              `輸入 1 : 【僅從本次排序中移除】\n` +
+                              `輸入 2 : 【從 Data Base 完全刪除】\n\n`;
 
             const action = prompt(promptMsg);
 
             if (action === '1') {
-                const currentOrderIds = Array.from(document.getElementById('sortableList').children)
-                                             .map(li => parseInt(li.getAttribute('data-id')))
-                                             .filter(listId => listId !== id);
-                const updatedList = currentOrderIds.map(listId => newsDatabase.find(item => item.id === listId)).filter(Boolean);
-                renderSortableList(updatedList);
-                alert("已成功將該筆報導從「本次回報排序」中隱藏。");
+                // 僅從目前的 DOM 列表移除該項目
+                e.target.closest('li').remove();
+                alert("已成功將該筆報導從「本次排序」中隱藏。");
             } 
             else if (action === '2') {
-                if (confirm(`⚠️ 嚴重警告！您即將從【Data Base 總資料庫】徹底刪除此筆資料(編號: ${id})，刪除後將無法還原。\n確定執行嗎？`)) {
-                    newsDatabase = newsDatabase.filter(item => item.id !== id);
+                if (confirm(`⚠️ 您即將從【Data Base 總資料庫】刪除此筆資料。\n確定執行嗎？`)) {
+                    // 1. 從總庫中過濾拔除
+                    newsDatabase = newsDatabase.filter(item => !(item.title === titleKey && item.media === mediaKey));
+                    reorderDatabaseIds(); // 重新順號
                     saveToLocalStorage();
                     renderDatabase();
                     updateCounters();
                     
-                    const currentOrderIds = Array.from(document.getElementById('sortableList').children)
-                                                 .map(li => parseInt(li.getAttribute('data-id')))
-                                                 .filter(listId => listId !== id);
-                    const updatedList = currentOrderIds.map(listId => newsDatabase.find(item => item.id === listId)).filter(Boolean);
-                    renderSortableList(updatedList);
-                    alert("該報導已徹底從總資料庫與排序畫面移除。");
+                    // 2. 同步更新排序視窗
+                    e.target.closest('li').remove();
+                    alert("該報導已徹底從總資料庫移除");
                 }
             }
         }
@@ -602,14 +607,18 @@
                 btn.title = `點擊載入此排序結果 / 右鍵可刪除此紀錄`;
                 
                 btn.onclick = function() {
-                    const loadedData = h.sortedIds.map(id => newsDatabase.find(item => item.id === id)).filter(Boolean);
+                    // 因為序號會變動，改用內容特徵（Title + Media）進行精準歷史還原對接
+                    const loadedData = h.sortedKeys.map(key => {
+                        return newsDatabase.find(item => item.title === key.title && item.media === key.media);
+                    }).filter(Boolean);
+
                     if (loadedData.length > 0) {
                         renderSortableList(loadedData);
                         if (h.reportDate) document.getElementById('lineReportDate').value = h.reportDate;
                         if (h.reportTime) document.getElementById('lineReportTime').value = h.reportTime;
                         alert(`已成功載入歷史紀錄 ${currentHistory.length - idx} 的排序結果！`);
                     } else {
-                        alert("部分新聞已被您從資料庫刪除，無法完整還原。");
+                        alert("原紀錄中的新聞已由總庫刪除。");
                     }
                 };
 
@@ -631,8 +640,17 @@
         }
 
         function saveSortAndExport() {
-            const currentOrderIds = Array.from(document.getElementById('sortableList').children).map(li => parseInt(li.getAttribute('data-id')));
-            const finalSortedData = currentOrderIds.map(id => newsDatabase.find(item => item.id === id)).filter(Boolean);
+            const listItems = Array.from(document.getElementById('sortableList').children);
+            
+            // 抓取當前拖曳出來的最終順序物件群
+            const finalSortedData = listItems.map(li => {
+                const tKey = li.getAttribute('data-title-key');
+                const mKey = li.getAttribute('data-media-key');
+                return newsDatabase.find(item => item.title === tKey && item.media === mKey);
+            }).filter(Boolean);
+
+            // 儲存特徵金鑰結構，避免因為重新順號導致歷史快照抓錯對象
+            const sortedKeys = finalSortedData.map(item => ({ title: item.title, media: item.media }));
 
             const rDate = document.getElementById('lineReportDate').value.trim() || "0000";
             const rTime = document.getElementById('lineReportTime').value.trim() || "00:00";
@@ -643,7 +661,7 @@
                 timeOnly: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 theme: document.getElementById('eventTheme').value || "未命名活動",
                 count: finalSortedData.length,
-                sortedIds: currentOrderIds,
+                sortedKeys: sortedKeys,
                 reportDate: rDate,
                 reportTime: rTime
             };
@@ -706,7 +724,7 @@
             outputText += `------------------`;
 
             navigator.clipboard.writeText(outputText).then(() => {
-                alert(`✨ 成果回報文字生成成功！\n\n已完全依照指定格式統計加總，並『自動複製到你的剪貼簿』了！\n現在你可以直接去 LINE 貼上 (Ctrl+V) 回報給主管囉！`);
+                alert(`✨ 成果回報文字生成成功！\n\n已自動複製到剪貼簿！\n可以直接去 LINE 貼上 (Ctrl+V) 回報給主管囉！`);
             }).catch(err => {
                 alert("自動複製失敗，請手動複製內容。");
             });
