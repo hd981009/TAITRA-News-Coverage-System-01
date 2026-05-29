@@ -15,7 +15,7 @@
             
             <div class="md:col-span-1 space-y-4">
                 <div class="bg-indigo-600 text-white p-4 rounded-xl shadow border border-indigo-700">
-                    <h1 class="text-lg font-bold mb-2">公關新聞收錄 management 系統</h1>
+                    <h1 class="text-lg font-bold mb-2">公關新聞收錄系統</h1>
                     <label class="block text-xs font-medium text-indigo-200 mb-1">當前活動主題</label>
                     <input type="text" id="eventTheme" oninput="saveTheme()" placeholder="請輸入活動主題..." class="w-full p-2 border border-indigo-400 bg-indigo-700 text-white placeholder-indigo-300 text-sm rounded-md focus:ring-2 focus:ring-white focus:outline-none">
                 </div>
@@ -168,21 +168,33 @@
 
     <div id="sortModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-6xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="bg-gray-100 p-4 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+            <div class="bg-gray-100 p-3 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
-                    <h3 class="text-base font-bold text-gray-800">🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
-                    <p class="text-xs text-gray-400">💡 提示：在任一新聞上【點擊滑鼠右鍵】，可選擇單獨從排序移除、或連同 Data Base 一起刪除！</p>
+                    <h3 class="text-sm font-bold text-gray-800">🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
                 </div>
-                <div class="flex items-center space-x-2 text-xs bg-white p-2 rounded-md border shadow-sm">
+                <div class="flex items-center space-x-2 text-xs bg-white p-1.5 rounded-md border shadow-sm flex-wrap gap-y-1">
                     <div>
                         <label class="block text-[10px] text-gray-400 font-medium">日期 (如:0520)</label>
-                        <input type="text" id="lineReportDate" placeholder="0520" class="w-20 p-1 border rounded text-center font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <input type="text" id="lineReportDate" placeholder="0520" class="w-16 p-1 border rounded text-center font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                     </div>
                     <div>
                         <label class="block text-[10px] text-gray-400 font-medium">收錄時間 (如:18:00)</label>
-                        <input type="text" id="lineReportTime" placeholder="18:00" class="w-20 p-1 border rounded text-center font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <input type="text" id="lineReportTime" placeholder="18:00" class="w-16 p-1 border rounded text-center font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                     </div>
-                    <button onclick="closeSortModal()" class="text-gray-500 hover:text-gray-700 text-xs font-bold border border-gray-300 px-2 py-2 rounded bg-gray-50">✕ 關閉視窗</button>
+                    
+                    <div class="border-l pl-2 ml-1">
+                        <label class="block text-[10px] text-amber-600 font-bold">主管交辦追加</label>
+                        <div class="flex items-center space-x-1">
+                            <input type="number" id="singleInsertId" placeholder="輸入資料編號" class="w-24 p-1 border border-amber-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-amber-500">
+                            <button onclick="insertSingleToCurrentSort()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-2 py-1 rounded shadow-sm text-[11px] transition">
+                                匯入
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border-l pl-2 ml-1 flex items-end h-full pt-3">
+                        <button onclick="closeSortModal()" class="text-gray-500 hover:text-gray-700 text-xs font-bold border border-gray-300 px-2 py-1 rounded bg-gray-50">✕ 關閉</button>
+                    </div>
                 </div>
             </div>
             
@@ -193,19 +205,7 @@
                         </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-2">
-                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 flex items-center justify-between text-xs">
-                        <div class="text-amber-800 font-medium flex items-center">
-                            <span>💡 主管臨時追加？免關視窗，直接用 Data Base 編號拉進來排序：</span>
-                        </div>
-                        <div class="flex items-center space-x-1.5">
-                            <input type="number" id="singleInsertId" placeholder="輸入資料庫編號" class="w-28 p-1 border border-amber-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-amber-500">
-                            <button onclick="insertSingleToCurrentSort()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1 rounded shadow-sm transition">
-                                📥 匯入此筆
-                            </button>
-                        </div>
-                    </div>
-
+                <div class="flex-1 overflow-y-auto p-4 flex flex-col">
                     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex-1 flex flex-col">
                         <div class="bg-gray-100 border-b border-gray-200 flex text-[11px] text-gray-500 font-semibold py-1.5 px-3 select-none">
                             <div class="w-8 text-center">拖曳</div>
@@ -518,7 +518,6 @@
             document.getElementById('lineReportDate').value = MM + DD;
             document.getElementById('lineReportTime').value = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-            // 清空右上角的單筆快入欄位
             document.getElementById('singleInsertId').value = "";
 
             renderSortableList(filteredNewsResult);
@@ -526,7 +525,6 @@
             document.getElementById('sortModal').classList.remove('hidden');
         }
 
-        // 🔬 完美緊貼排序清單：將傳入陣列資料轉化為 DOM 節點
         function renderSortableList(dataList) {
             const sortList = document.getElementById('sortableList');
             sortList.innerHTML = "";
@@ -540,10 +538,9 @@
             sortableInstance = new Sortable(sortList, { animation: 150 });
         }
 
-        // 🛠️ 封裝動態生成 Li 節點的邏輯，供多處共用
         function createSortableLiElement(item) {
             const li = document.createElement('li');
-            li.className = "bg-white flex items-center justify-between border-b border-gray-100 cursor-move hover:bg-indigo-50/60 transition select-none py-1 px-3 text-xs text-gray-700 animate-fade-in";
+            li.className = "bg-white flex items-center justify-between border-b border-gray-100 cursor-move hover:bg-indigo-50/60 transition select-none py-1 px-3 text-xs text-gray-700";
             li.setAttribute('data-title-key', item.title); 
             li.setAttribute('data-media-key', item.media);
             
@@ -567,7 +564,7 @@
             return li;
         }
 
-        // 🆕 新增核心功能：在排序畫面直接用 ID 匯入單筆資料（主管臨時交辦專用）
+        // 📥 頂部並排：單筆插隊匯入核心功能
         function insertSingleToCurrentSort() {
             const idInput = document.getElementById('singleInsertId');
             const targetId = parseInt(idInput.value);
@@ -577,14 +574,12 @@
                 return;
             }
 
-            // 1. 去總資料庫搜尋這筆資料
             const matchedNews = newsDatabase.find(item => item.id === targetId);
             if (!matchedNews) {
                 alert(`【找不到資料】在總資料庫中找不到編號為「${targetId}」的新聞，請確認主表格左側的紅字編號！`);
                 return;
             }
 
-            // 2. 檢查目前畫面上是不是已經存在這一筆（防止重複匯入）
             const sortList = document.getElementById('sortableList');
             const existingItems = Array.from(sortList.children);
             const isDuplicate = existingItems.some(li => {
@@ -593,24 +588,20 @@
             });
 
             if (isDuplicate) {
-                alert(`【提示】這則新聞（${matchedNews.media} - ${matchedNews.title.substring(0, 10)}...）已經存在於當前的排序清單中了，不需重複匯入。`);
+                alert(`【提示】這則新聞已經存在於當前的排序清單中了。`);
                 return;
             }
 
-            // 3. 生成新的節點並直接排入最底部（方便拖曳）
             const newLi = createSortableLiElement(matchedNews);
             sortList.appendChild(newLi);
 
-            // 4. 清空輸入格，給予成功回饋
             idInput.value = "";
             newLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             
-            // 短暫高亮提醒使用者新加入的元件在哪裡
             newLi.classList.add('bg-amber-100');
             setTimeout(() => { newLi.classList.remove('bg-amber-100'); }, 1000);
         }
 
-        // 右鍵防護選單
         function handleSortItemRightClick(e, titleKey, mediaKey) {
             e.preventDefault();
             e.stopPropagation();
