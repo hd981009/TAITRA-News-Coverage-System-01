@@ -1,784 +1,839 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>公關新聞收錄系統</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>公關新聞收錄系統</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<style>
+  /* 處理右鍵自訂選單樣式 */
+  #customTypeMenu { display: none; position: absolute; z-index: 100; min-width: 120px; }
+  .cursor-move-row { cursor: move; }
+</style>
 </head>
-<body class="bg-gray-50 min-h-screen p-4 font-sans text-gray-800">
+<body class="bg-gray-50 min-h-screen p-4 font-sans text-gray-800" onclick="hideCustomMenu()">
+<div class="max-w-7xl mx-auto space-y-4">
 
-    <div class="max-w-7xl mx-auto space-y-4">
-        
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            
-            <div class="md:col-span-1 space-y-4">
-                <div class="bg-indigo-600 text-white p-4 rounded-xl shadow border border-indigo-700">
-                    <h1 class="text-lg font-bold mb-2">公關新聞收錄系統</h1>
-                    <label class="block text-xs font-medium text-indigo-200 mb-1">當前活動主題</label>
-                    <input type="text" id="eventTheme" oninput="saveTheme()" placeholder="請輸入活動主題..." class="w-full p-2 border border-indigo-400 bg-indigo-700 text-white placeholder-indigo-300 text-sm rounded-md focus:ring-2 focus:ring-white focus:outline-none">
-                </div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-                <div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-3">
-                    <div class="flex justify-between items-center pb-1 border-b">
-                        <h3 class="text-sm font-semibold text-gray-700">收錄則數統計</h3>
-                        <span class="text-[10px] text-gray-400">💡欄位右鍵可修改/編號右鍵可刪</span>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-gray-600">
-                        <div class="flex justify-between"><span>報紙：</span><span id="count-newspaper" class="font-bold text-indigo-600">0</span></div>
-                        <div class="flex justify-between"><span>影音：</span><span id="count-video" class="font-bold text-indigo-600">0</span></div>
-                        <div class="flex justify-between"><span>網路：</span><span id="count-web" class="font-bold text-indigo-600">0</span></div>
-                        <div class="flex justify-between"><span>雜誌：</span><span id="count-magazine" class="font-bold text-indigo-600">0</span></div>
-                        <hr class="my-1.5">
-                        <div class="flex justify-between text-sm font-bold text-gray-800"><span>總共：</span><span id="count-total">0</span></div>
-                    </div>
-                    
-                    <hr class="my-2">
+<div class="md:col-span-1 space-y-4">
+<div class="bg-indigo-600 text-white p-4 rounded-xl shadow border border-indigo-700">
+<h1 class="text-lg font-bold mb-2">公關新聞收錄系統</h1>
+<label class="block text-xs font-medium text-indigo-200 mb-1">當前活動主題</label>
+<input type="text" id="eventTheme" oninput="saveTheme()" placeholder="請輸入活動主題..." class="w-full p-2 border border-indigo-400 bg-indigo-700 text-white placeholder-indigo-300 text-sm rounded-md focus:ring-2 focus:ring-white focus:outline-none">
+</div>
+<div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-3">
+<div class="flex justify-between items-center pb-1 border-b">
+<h3 class="text-sm font-semibold text-gray-700">收錄則數統計</h3>
+<span class="text-[10px] text-gray-400"> 💡 欄位右鍵可修改/編號右鍵可刪</span>
+</div>
+<div class="space-y-1.5 text-xs text-gray-600">
+<div class="flex justify-between"><span>報紙：</span><span id="count-newspaper" class="font-bold text-indigo-600">0</span></div>
+<div class="flex justify-between"><span>影音：</span><span id="count-video" class="font-bold text-indigo-600">0</span></div>
+<div class="flex justify-between"><span>雜誌：</span><span id="count-magazine" class="font-bold text-indigo-600">0</span></div>
+<div class="flex justify-between"><span>其他：</span><span id="count-other" class="font-bold text-indigo-600">0</span></div>
+<hr class="my-1.5">
+<div class="flex justify-between text-sm font-bold text-gray-800"><span>當前顯示/總共：</span><span><span id="count-filtered">0</span>/<span id="count-total">0</span></span></div>
+</div>
 
-                    <button onclick="toggleInputModal(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-2 text-xs font-bold rounded-md shadow transition text-center block">
-                        ➕ 開啟新增報導窗格
-                    </button>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="exportProject()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium rounded-md border border-blue-200 transition text-center">
-                            📤 匯出專案
-                        </button>
-                        <button onclick="document.getElementById('importProjectFile').click()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 py-1.5 px-2 text-xs font-medium rounded-md border border-amber-200 transition text-center">
-                            📥 匯入專案
-                        </button>
-                        <input type="file" id="importProjectFile" class="hidden" accept=".json" onchange="importProject(event)">
-                    </div>
-                    <button onclick="clearDatabase()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 py-1 px-2 text-xs font-medium rounded-md transition text-center">
-                        🗑️ 清空所有資料
-                    </button>
-                </div>
-            </div>
+<hr class="my-2">
+<button onclick="toggleInputModal(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-2 text-xs font-bold rounded-md shadow transition text-center block">
+  ➕  開啟新增報導窗格
+</button>
 
-            <div class="md:col-span-3 space-y-4">
-                <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
-                    <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                        <h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE)</h3>
-                        <div class="flex space-x-2 text-xs">
-                            <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
-                                📊 匯出 Excel (CSV)
-                            </button>
-                            <button onclick="document.getElementById('importCSVFile').click()" class="bg-teal-50 text-teal-700 border border-teal-200 px-2.5 py-1 rounded hover:bg-teal-100 transition">
-                                📊 匯入 Excel (CSV)
-                            </button>
-                            <input type="file" id="importCSVFile" class="hidden" accept=".csv" onchange="importCSV(event)">
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto max-h-96">
-                        <table class="w-full text-left border-collapse text-xs table-fixed">
-                            <thead class="sticky top-0 bg-gray-100 shadow-sm z-10 text-gray-500 font-medium border-b border-gray-200">
-                                <tr>
-                                    <th class="p-2.5 w-12 text-center">編號</th>
-                                    <th class="p-2.5 w-24">收錄日期</th>
-                                    <th class="p-2.5 w-16">類型</th>
-                                    <th class="p-2.5 w-24">媒體名稱</th>
-                                    <th class="p-2.5 w-64">報導標題</th>
-                                    <th class="p-2.5 w-48">連結/版位</th>
-                                    <th class="p-2.5 w-16">記者</th>
-                                    <th class="p-2.5 w-32">關鍵字</th>
-                                </tr>
-                            </thead>
-                            <tbody id="databaseBody" class="divide-y divide-gray-100 text-gray-600">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
+<div class="grid grid-cols-2 gap-2">
+<button onclick="exportProject()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium rounded-md border border-blue-200 transition text-center">
+  📤  匯出專案
+</button>
+<button onclick="document.getElementById('importProjectFile').click()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 py-1.5 px-2 text-xs font-medium rounded-md border border-amber-200 transition text-center">
+  📥  匯入專案
+</button>
+<input type="file" id="importProjectFile" class="hidden" accept=".json" onchange="importProject(event)">
+</div>
+<button onclick="clearDatabase()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 py-1 px-2 text-xs font-medium rounded-md transition text-center">
+  🗑️  清空所有資料
+</button>
+</div>
 
-                <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">起始序號</label>
-                            <input type="number" id="startId" placeholder="1" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">結束序號</label>
-                            <input type="number" id="endId" placeholder="10" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">關鍵字篩選（選填）</label>
-                            <input type="text" id="filterKeyword" placeholder="輸入要篩選的關鍵字" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
-                        </div>
-                        <div>
-                            <button onclick="filterAndOpenSortModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-md font-medium text-xs shadow transition">
-                                🔍 篩選並進行排序
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+<div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-2">
+  <h3 class="text-xs font-semibold text-gray-700 border-b pb-1">🔍 DATABASE 關鍵字篩選 (可複選)</h3>
+  <div id="keywordFilterContainer" class="max-h-40 overflow-y-auto space-y-1 text-xs">
     </div>
+</div>
+</div>
 
-    <div id="inputModal" class="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-40 hidden animate-fade-in">
-        <div class="bg-indigo-600 text-white p-3 rounded-t-2xl flex justify-between items-center">
-            <h3 class="text-xs font-bold flex items-center">📝 新增報導資訊</h3>
-            <button onclick="toggleInputModal(false)" class="text-indigo-200 hover:text-white text-xs font-medium bg-indigo-700 px-2 py-0.5 rounded">✕ 關閉</button>
-        </div>
-        <div class="p-4 space-y-2.5 max-h-[75vh] overflow-y-auto text-xs">
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block text-gray-400 mb-1">收錄日期</label>
-                    <input type="date" id="newsDate" class="w-full p-1.5 border border-gray-300 rounded-md">
-                </div>
-                <div>
-                    <label class="block text-gray-400 mb-1">報導類型</label>
-                    <select id="newsType" class="w-full p-1.5 border border-gray-300 rounded-md">
-                        <option value="網路">網路</option>
-                        <option value="報紙">報紙</option>
-                        <option value="影音">影音</option>
-                        <option value="雜誌">雜誌</option>
-                    </select>
-                </div>
-            </div>
-           <div>
-    <label class="block text-gray-400 mb-1">報導標題 <span class="text-red-500">*</span></label>
-    <input type="text" id="newsTitle" placeholder="請輸入新聞標題（必填）" class="w-full p-1.5 border border-gray-300 rounded-md">
+<div class="md:col-span-3 space-y-4">
+<div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+<div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳整行調整順序)</span></h3>
+<div class="flex space-x-2 text-xs">
+<button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
+  📊  匯出 Excel (CSV)
+</button>
+<button onclick="document.getElementById('importCSVFile').click()" class="bg-teal-50 text-teal-700 border border-teal-200 px-2.5 py-1 rounded hover:bg-teal-100 transition">
+  📊  匯入 Excel (CSV)
+</button>
+<input type="file" id="importCSVFile" class="hidden" accept=".csv" onchange="importCSV(event)">
+</div>
+</div>
+<div class="overflow-x-auto max-h-96">
+<table class="w-full text-left border-collapse text-xs table-fixed">
+<thead class="sticky top-0 bg-gray-100 shadow-sm z-10 text-gray-500 font-medium border-b border-gray-200">
+<tr>
+<th class="p-2.5 w-12 text-center">編號</th>
+<th class="p-2.5 w-24">收錄日期</th>
+<th class="p-2.5 w-16">類型</th>
+<th class="p-2.5 w-24">媒體名稱</th>
+<th class="p-2.5 w-64">報導標題</th>
+<th class="p-2.5 w-48">連結/版位</th>
+<th class="p-2.5 w-16">記者</th>
+<th class="p-2.5 w-32">關鍵字</th>
+</tr>
+</thead>
+<tbody id="databaseBody" class="divide-y divide-gray-100 text-gray-600">
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+<div>
+<label class="block text-xs font-medium text-gray-400 mb-1">起始序號</label>
+<input type="number" id="startId" placeholder="1" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
 </div>
 <div>
-    <label class="block text-gray-400 mb-1">媒體名稱</label>
-    <input type="text" id="mediaName" placeholder="例如：中央社" class="w-full p-1.5 border border-gray-300 rounded-md">
+<label class="block text-xs font-medium text-gray-400 mb-1">結束序號</label>
+<input type="number" id="endId" placeholder="10" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
 </div>
-            <div>
-                <label class="block text-gray-700 mb-1">報導網址或報紙版位</label>
-                <input type="text" id="newsLink" placeholder="https://... 或 A3版" class="w-full p-1.5 border border-gray-300 rounded-md">
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block text-gray-700 mb-1">記者名字</label>
-                    <input type="text" id="reporter" placeholder="陳大文（選填）" class="w-full p-1.5 border border-gray-300 rounded-md">
-                </div>
-                <div>
-                    <label class="block text-gray-700 mb-1">關鍵字</label>
-                    <input type="text" id="keywords" placeholder="用逗號隔開" class="w-full p-1.5 border border-gray-300 rounded-md">
-                </div>
-            </div>
-            <button onclick="importNews()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 mt-2 rounded-md font-bold shadow transition">
-                ➕ 匯入此筆資料
-            </button>
-        </div>
-    </div>
-
-
-    <div id="sortModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-6xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="bg-gray-100 px-3 py-1.5 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                <div>
-                    <h3 class="text-base font-bold text-gray-800">🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
-                    <p class="text-xs text-gray-400">💡 提示：在任一新聞上【點擊滑鼠右鍵】，可選擇單獨從排序移除、或連同 Data Base 一起刪除！</p>
-                </div>
-                <div class="flex items-center space-x-2 text-[11px] gap-y-1 flex-wrap">
-                    <div class="flex items-center space-x-1">
-                        <span class="text-gray-500">日期:</span>
-                        <input type="text" id="lineReportDate" placeholder="0520" class="w-14 p-0.5 border rounded text-center font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
-                    </div>
-                    <div class="flex items-center space-x-1">
-                        <span class="text-gray-500">時間:</span>
-                        <input type="text" id="lineReportTime" placeholder="18:00" class="w-14 p-0.5 border rounded text-center font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
-                    </div>
-                    
-                    <div class="border-l border-gray-300 pl-2 ml-1 flex items-center space-x-1">
-                        <input type="number" id="singleInsertId" placeholder="輸入資料編號" class="w-24 p-0.5 border border-amber-300 rounded text-center placeholder-gray-400 text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white">
-                        <button onclick="insertSingleToCurrentSort()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-2 py-0.5 rounded text-[11px] transition shadow-sm">
-                            匯入
-                        </button>
-                    </div>
-
-                    <div class="border-l border-gray-300 pl-2 ml-1">
-                        <button onclick="closeSortModal()" class="text-gray-500 hover:text-gray-700 font-medium border border-gray-300 px-2 py-0.5 rounded bg-gray-50 text-[11px]">✕ 關閉</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex-1 flex overflow-hidden bg-gray-50">
-                <div class="w-56 bg-gray-100 p-2 border-r overflow-y-auto space-y-2">
-                    <h4 class="text-[11px] font-bold text-gray-500 pb-1 border-b">📜 歷史排序紀錄 (右鍵可刪)</h4>
-                    <div id="historyButtonsContainer" class="space-y-1">
-                        </div>
-                </div>
-
-                <div class="flex-1 overflow-y-auto p-2 flex flex-col">
-                    <div class="flex-1 flex flex-col">
-                       <div class="bg-gray-200 border-b border-gray-300 flex text-[11px] text-gray-600 font-semibold py-1 px-2 select-none">
-    <div class="w-8 text-center">拖曳</div>
-    <div class="w-14">類型</div>
-    <div class="w-28">媒體名稱</div>
-    <div class="flex-1">報導標題 / 記者</div>
-    <div class="w-12 text-center">連結</div> <div class="w-20 text-right">收錄日期</div>
+<div class="md:col-span-2">
+<label class="block text-xs font-medium text-gray-400 mb-1">額外指定編號 (以逗號隔開，如 1,3,8)</label>
+<input type="text" id="specificIds" placeholder="1,3,8" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
 </div>
-                        <ul id="sortableList" class="divide-y divide-gray-200 flex-1 overflow-y-auto bg-white border border-gray-200 rounded-b">
-                            </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="px-3 py-1.5 border-t bg-white flex justify-end space-x-2 items-center">
-                <button onclick="closeSortModal()" class="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700">關閉</button>
-                <button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded font-medium text-xs shadow-sm">
-                    💾 儲存排序並匯出文字內容 (自動複製)
-                </button>
-            </div>
-        </div>
-    </div>
+<div>
+<button onclick="filterAndOpenSortModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-md font-medium text-xs shadow transition">
+  🔍  篩選並送入下方排序
+</button>
+</div>
+</div>
 
-    <script>
-        let newsDatabase = JSON.parse(localStorage.getItem('prNewsDatabase')) || [];
-        let exportHistory = JSON.parse(localStorage.getItem('prExportHistory')) || [];
-        let currentId = newsDatabase.length > 0 ? Math.max(...newsDatabase.map(item => item.id)) + 1 : 1;
-        let filteredNewsResult = [];
-        let sortableInstance = null;
+<div id="sortSection" class="border border-gray-200 rounded-xl overflow-hidden hidden bg-gray-50">
+<div class="bg-gray-100 px-3 py-2 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+<div>
+<h3 class="text-sm font-bold text-gray-800"> 🔬  調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
+<p class="text-[11px] text-gray-400"> 💡  提示：在新聞上【點擊右鍵】可單獨從排序移除，或連同總庫一起刪除！</p>
+</div>
+<div class="flex items-center space-x-2 text-[11px] gap-y-1 flex-wrap">
+<div class="flex items-center space-x-1">
+<span class="text-gray-500">日期:</span>
+<input type="text" id="lineReportDate" placeholder="0520" class="w-14 p-0.5 border rounded text-center font-bold text-indigo-700 bg-white">
+</div>
+<div class="flex items-center space-x-1">
+<span class="text-gray-500">時間:</span>
+<input type="text" id="lineReportTime" placeholder="18:00" class="w-14 p-0.5 border rounded text-center font-bold text-indigo-700 bg-white">
+</div>
+<div class="border-l border-gray-300 pl-2 ml-1 flex items-center space-x-1">
+<input type="number" id="singleInsertId" placeholder="輸入資料編號" class="w-24 p-0.5 border border-amber-300 rounded text-center text-xs bg-white">
+<button onclick="insertSingleToCurrentSort()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-2 py-0.5 rounded text-[11px] transition shadow-sm">匯入</button>
+</div>
+</div>
+</div>
 
-        window.onload = function() {
-            document.getElementById('eventTheme').value = localStorage.getItem('prEventTheme') || "";
-            document.getElementById('newsDate').valueAsDate = new Date();
-            renderDatabase();
-            updateCounters();
-        };
+<div class="h-64 flex overflow-hidden">
+<div class="w-48 bg-gray-100 p-2 border-r overflow-y-auto space-y-2">
+<h4 class="text-[11px] font-bold text-gray-500 pb-1 border-b"> 📜  歷史排序紀錄 (右鍵可刪)</h4>
+<div id="historyButtonsContainer" class="space-y-1"></div>
+</div>
+<div class="flex-1 flex flex-col overflow-hidden bg-white">
+<div class="bg-gray-200 border-b border-gray-300 flex text-[11px] text-gray-600 font-semibold py-1 px-2 select-none">
+<div class="w-8 text-center">拖曳</div>
+<div class="w-14">類型</div>
+<div class="w-28">媒體名稱</div>
+<div class="flex-1">報導標題 / 記者</div>
+<div class="w-12 text-center">連結</div> 
+<div class="w-20 text-right">收錄日期</div>
+</div>
+<ul id="sortableList" class="divide-y divide-gray-200 flex-1 overflow-y-auto"></ul>
+</div>
+</div>
 
-        function saveTheme() {
-            localStorage.setItem('prEventTheme', document.getElementById('eventTheme').value);
-        }
+<div class="px-3 py-2 border-t bg-white flex justify-end space-x-2 items-center">
+<button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded font-medium text-xs shadow-sm">
+  💾  儲存排序並匯出文字內容 (自動複製)
+</button>
+</div>
+</div>
+</div>
 
-        function toggleInputModal(show) {
-            const modal = document.getElementById('inputModal');
-            if (show) modal.classList.remove('hidden');
-            else modal.classList.add('hidden');
-        }
+</div>
+</div>
+</div>
 
-        function importNews() {
-            const date = document.getElementById('inputModal').querySelector('#newsDate').value;
-            const type = document.getElementById('inputModal').querySelector('#newsType').value;
-            const media = document.getElementById('inputModal').querySelector('#mediaName').value.trim();
-            const title = document.getElementById('inputModal').querySelector('#newsTitle').value.trim();
-            const link = document.getElementById('inputModal').querySelector('#newsLink').value.trim();
-            const reporter = document.getElementById('inputModal').querySelector('#reporter').value.trim();
-            const keywords = document.getElementById('inputModal').querySelector('#keywords').value.trim();
+<div id="inputModal" class="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-40 hidden">
+<div class="bg-indigo-600 text-white p-3 rounded-t-2xl flex justify-between items-center">
+<h3 class="text-xs font-bold flex items-center"> 📝  新增報導資訊</h3>
+<button onclick="toggleInputModal(false)" class="text-indigo-200 hover:text-white text-xs font-medium bg-indigo-700 px-2 py-0.5 rounded"> ✕  關閉</button>
+</div>
+<div class="p-4 space-y-2.5 max-h-[75vh] overflow-y-auto text-xs">
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="block text-gray-400 mb-1">收錄日期</label>
+<input type="date" id="newsDate" class="w-full p-1.5 border border-gray-300 rounded-md">
+</div>
+<div>
+<label class="block text-gray-400 mb-1">報導類型</label>
+<select id="newsType" class="w-full p-1.5 border border-gray-300 rounded-md">
+<option value="報紙">報紙</option>
+<option value="影音">影音</option>
+<option value="雜誌">雜誌</option>
+<option value="其他">其他</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-gray-400 mb-1">報導標題 <span class="text-red-500">*</span></label>
+<input type="text" id="newsTitle" placeholder="請輸入新聞標題（必填）" class="w-full p-1.5 border border-gray-300 rounded-md">
+</div>
+<div>
+<label class="block text-gray-400 mb-1">媒體名稱</label>
+<input type="text" id="mediaName" placeholder="例如：中央社" class="w-full p-1.5 border border-gray-300 rounded-md">
+</div>
+<div>
+<label class="block text-gray-400 mb-1">報導網址或報紙版位</label>
+<input type="text" id="newsLink" placeholder="https://... 或 A3版" class="w-full p-1.5 border border-gray-300 rounded-md">
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="block text-gray-700 mb-1">記者名字</label>
+<input type="text" id="reporter" placeholder="陳大文（選填）" class="w-full p-1.5 border border-gray-300 rounded-md">
+</div>
+<div>
+<label class="block text-gray-700 mb-1">關鍵字</label>
+<input type="text" id="keywords" placeholder="用逗號隔開" class="w-full p-1.5 border border-gray-300 rounded-md">
+</div>
+</div>
+<button onclick="importNews()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 mt-2 rounded-md font-bold shadow transition">
+  ➕  匯入此筆資料
+</button>
+</div>
+</div>
 
-            if (!title) {
-                alert("【匯入失敗】報導標題為必填項目，請輸入標題！");
-                return;
-            }
+<div id="customTypeMenu" class="bg-white border border-gray-200 shadow-md rounded-md py-1 text-xs">
+  <div onclick="selectCustomType('報紙')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">報紙</div>
+  <div onclick="selectCustomType('影音')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">影音</div>
+  <div onclick="selectCustomType('雜誌')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">雜誌</div>
+  <div onclick="selectCustomType('其他')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">其他</div>
+</div>
 
-            if (link.startsWith('http')) {
-                const isDuplicate = newsDatabase.some(item => item.link === link);
-                if (isDuplicate) {
-                    alert(`【重複收錄警告】此網址（${link}）已經存在於資料庫中！`);
-                    return;
-                }
-            }
+<script>
+let newsDatabase = JSON.parse(localStorage.getItem('prNewsDatabase')) || [];
+let exportHistory = JSON.parse(localStorage.getItem('prExportHistory')) || [];
+let currentId = newsDatabase.length > 0 ? Math.max(...newsDatabase.map(item => item.id)) + 1 : 1;
+let filteredNewsResult = [];
+let sortableInstance = null;
+let dbSortableInstance = null;
+let selectedKeywords = [];
+let currentEditingMenuId = null;
 
-            const newsItem = {
-                id: currentId++,
-                date: date || "未填",
-                type: type,
-                media: media || "未填",
-                title: title,
-                link: link || "未填",
-                reporter: reporter || "未填",
-                keywords: keywords || ""
-            };
+window.onload = function() {
+  document.getElementById('eventTheme').value = localStorage.getItem('prEventTheme') || "";
+  document.getElementById('newsDate').valueAsDate = new Date();
+  initDatabaseSortable();
+  renderDatabase();
+};
 
-            newsDatabase.push(newsItem);
-            saveToLocalStorage();
-            renderDatabase();
-            updateCounters();
-            
-            document.getElementById('inputModal').querySelector('#mediaName').value = "";
-            document.getElementById('inputModal').querySelector('#newsTitle').value = "";
-            document.getElementById('inputModal').querySelector('#newsLink').value = "";
-            document.getElementById('inputModal').querySelector('#reporter').value = "";
-            document.getElementById('inputModal').querySelector('#keywords').value = "";
-        }
-
-        function renderDatabase() {
-            const tbody = document.getElementById('databaseBody');
-            tbody.innerHTML = "";
-
-            newsDatabase.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 transition border-b border-gray-100 h-9";
-                
-                let linkDisplay = item.link;
-                if (item.link.startsWith('http')) {
-                    linkDisplay = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline block truncate" title="${item.link}">${item.link}</a>`;
-                } else {
-                    linkDisplay = `<span class="block truncate" title="${item.link}">${item.link}</span>`;
-                }
-
-                tr.innerHTML = `
-                    <td class="p-2 text-center font-medium text-red-500 cursor-pointer bg-red-50/30 hover:bg-red-100 font-bold select-none" 
-                        oncontextmenu="handleIdRightClick(event, ${item.id})" title="點擊右鍵可刪除此筆">
-                        ${item.id}
-                    </td>
-                    <td class="p-2 truncate cursor-edit" oncontextmenu="handleCellRightClick(event, ${item.id}, 'date')">${item.date}</td>
-                    <td class="p-2 select-none" oncontextmenu="handleCellRightClick(event, ${item.id}, 'type')">
-                        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
-                    </td>
-                    <td class="p-2 font-medium truncate cursor-edit" oncontextmenu="handleCellRightClick(event, ${item.id}, 'media')">${item.media}</td>
-                    <td class="p-2 truncate cursor-edit font-medium text-gray-900" title="${item.title}" oncontextmenu="handleCellRightClick(event, ${item.id}, 'title')">${item.title}</td>
-                    <td class="p-2 truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'link')">${linkDisplay}</td>
-                    <td class="p-2 truncate cursor-edit" oncontextmenu="handleCellRightClick(event, ${item.id}, 'reporter')">${item.reporter}</td>
-                    <td class="p-2 truncate text-gray-400 cursor-edit" title="${item.keywords}" oncontextmenu="handleCellRightClick(event, ${item.id}, 'keywords')">${item.keywords}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function reorderDatabaseIds() {
-            newsDatabase.forEach((item, index) => {
-                item.id = index + 1;
-            });
-            currentId = newsDatabase.length + 1;
-        }
-
-        function handleCellRightClick(e, id, field) {
-            e.preventDefault();
-            const item = newsDatabase.find(data => data.id === id);
-            if (!item) return;
-
-            let fieldName = "";
-            switch(field) {
-                case 'date': fieldName = "收錄日期"; break;
-                case 'type': fieldName = "報導類型 (網路、報紙、影音、雜誌)"; break;
-                case 'media': fieldName = "媒體名稱"; break;
-                case 'title': fieldName = "報導標題"; break;
-                case 'link': fieldName = "報導網址或新聞版位"; break;
-                case 'reporter': fieldName = "記者名字"; break;
-                case 'keywords': fieldName = "關鍵字"; break;
-            }
-
-            const newValue = prompt(`【修改新聞資料】\n請輸入新的 ${fieldName}：`, item[field]);
-            if (newValue !== null) {
-                const trimmedValue = newValue.trim();
-                if (field === 'title' && !trimmedValue) {
-                    alert("標題不可以改為空白喔！");
-                    return;
-                }
-                item[field] = trimmedValue || "未填";
-                saveToLocalStorage();
-                renderDatabase();
-                updateCounters();
-            }
-        }
-
-        function handleIdRightClick(e, id) {
-            e.preventDefault();
-            if (confirm(`❓ 是否刪除此筆資料？(編號: ${id})\n⚠️ 刪除後系統將重新排序`)) {
-                newsDatabase = newsDatabase.filter(item => item.id !== id);
-                reorderDatabaseIds();
-                saveToLocalStorage();
-                renderDatabase();
-                updateCounters();
-            }
-        }
-
-        function getTypeClass(type) {
-            switch(type) {
-                case '報紙': return 'bg-orange-100 text-orange-800';
-                case '影音': return 'bg-red-100 text-red-800';
-                case '網路': return 'bg-blue-100 text-blue-800';
-                case '雜誌': return 'bg-green-100 text-green-800';
-                default: return 'bg-gray-100 text-gray-800';
-            }
-        }
-
-        function updateCounters() {
-            const counts = { '報紙': 0, '影音': 0, '網路': 0, '雜誌': 0 };
-            newsDatabase.forEach(item => { if (counts[item.type] !== undefined) counts[item.type]++; });
-            document.getElementById('count-newspaper').innerText = counts['報紙'];
-            document.getElementById('count-video').innerText = counts['影音'];
-            document.getElementById('count-web').innerText = counts['網路'];
-            document.getElementById('count-magazine').innerText = counts['雜誌'];
-            document.getElementById('count-total').innerText = newsDatabase.length;
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('prNewsDatabase', JSON.stringify(newsDatabase));
-            localStorage.setItem('prExportHistory', JSON.stringify(exportHistory));
-        }
-
-        function clearDatabase() {
-            if (confirm("⚠️ 確定要清空所有資料嗎？")) {
-                localStorage.clear();
-                newsDatabase = []; exportHistory = []; currentId = 1;
-                document.getElementById('eventTheme').value = "";
-                renderDatabase(); updateCounters();
-                alert("已完全清空！");
-            }
-        }
-
-        // ================= 專案 匯出 / 匯入 =================
-        function exportProject() {
-            const dataStr = JSON.stringify({ theme: document.getElementById('eventTheme').value, database: newsDatabase, history: exportHistory });
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `新聞收錄專案備份_${document.getElementById('eventTheme').value || '未命名'}.json`;
-            a.click();
-        }
-
-        function importProject(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const data = JSON.parse(evt.target.result);
-                    if (data.database) {
-                        newsDatabase = data.database;
-                        exportHistory = data.history || [];
-                        document.getElementById('eventTheme').value = data.theme || "";
-                        reorderDatabaseIds();
-                        saveTheme(); saveToLocalStorage(); renderDatabase(); updateCounters();
-                        alert("專案備份匯入成功！");
-                    }
-                } catch (err) { alert("無效的專案檔案！"); }
-            };
-            reader.readAsText(file);
-        }
-
-        // ================= Excel (CSV) 匯出 / 匯入 =================
-        function exportCSV() {
-            if (newsDatabase.length === 0) return alert("沒有資料可導出！");
-            let csvContent = "\uFEFF編號,收錄日期,報導類型,媒體名稱,報導標題,報導網址或報紙版位,記者名字,關鍵字\n";
-            newsDatabase.forEach(item => {
-                csvContent += `"${item.id}","${item.date}","${item.type}","${item.media}","${item.title}","${item.link}","${item.reporter}","${item.keywords}"\n`;
-            });
-            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `新聞資料庫_${document.getElementById('eventTheme').value || '未命名'}.csv`;
-            link.click();
-        }
-
-        function importCSV(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const text = evt.target.result;
-                const lines = text.split("\n");
-                let loadedCount = 0;
-                
-                for (let i = 1; i < lines.length; i++) {
-                    if (!lines[i].trim()) continue;
-                    const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
-                    
-                    const csvTitle = cols[4];
-                    if (!csvTitle || csvTitle === "報導標題" || csvTitle === "未填") continue;
-
-                    newsDatabase.push({
-                        id: currentId++,
-                        date: cols[1] || "未填",
-                        type: cols[2] || "網路",
-                        media: cols[3] || "未填",
-                        title: csvTitle,
-                        link: cols[5] || "未填",
-                        reporter: cols[6] || "未填",
-                        keywords: cols[7] || ""
-                    });
-                    loadedCount++;
-                }
-                reorderDatabaseIds();
-                saveToLocalStorage(); renderDatabase(); updateCounters();
-                alert(`成功從 Excel(CSV) 重新編號並匯入 ${loadedCount} 筆有效報導！`);
-            };
-            reader.readAsText(file, "UTF-8");
-        }
-
-        // ================= 第二步與拖曳彈出視窗功能 =================
-        function filterAndOpenSortModal() {
-            const startId = parseInt(document.getElementById('startId').value);
-            const endId = parseInt(document.getElementById('endId').value);
-            const keyword = document.getElementById('filterKeyword').value.trim();
-
-            if (newsDatabase.length === 0) return alert("資料庫是空的喔！");
-
-            filteredNewsResult = newsDatabase.filter(item => {
-                const matchStart = !isNaN(startId) ? item.id >= startId : true;
-                const matchEnd = !isNaN(endId) ? item.id <= endId : true;
-                const matchKeyword = keyword !== "" ? item.keywords.includes(keyword) : true;
-                return matchStart && matchEnd && matchKeyword;
-            });
-
-            if (filteredNewsResult.length === 0) return alert("沒有找到符合條件的新聞報導！");
-
-            const now = new Date();
-            const MM = String(now.getMonth() + 1).padStart(2, '0');
-            const DD = String(now.getDate()).padStart(2, '0');
-            document.getElementById('lineReportDate').value = MM + DD;
-            document.getElementById('lineReportTime').value = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-            document.getElementById('singleInsertId').value = "";
-
-            renderSortableList(filteredNewsResult);
-            renderHistoryButtons();
-            document.getElementById('sortModal').classList.remove('hidden');
-        }
-
-        function renderSortableList(dataList) {
-            const sortList = document.getElementById('sortableList');
-            sortList.innerHTML = "";
-
-            dataList.forEach(item => {
-                const li = createSortableLiElement(item);
-                sortList.appendChild(li);
-            });
-
-            if (sortableInstance) sortableInstance.destroy();
-            sortableInstance = new Sortable(sortList, { animation: 150 });
-        }
-
-function createSortableLiElement(item) {
-    const li = document.createElement('li');
-    li.className = "bg-white flex items-center justify-between border-b border-gray-100 cursor-move hover:bg-indigo-50/60 transition select-none py-1 px-2 text-xs text-gray-700";
-    li.setAttribute('data-title-key', item.title); 
-    li.setAttribute('data-media-key', item.media);
-    
-    li.oncontextmenu = function(e) {
-        handleSortItemRightClick(e, item.title, item.media);
-    };
-
-    // 判斷連結是否為網址，若是則提供超連結，若非(如版位)則純文字顯示
-    let linkHtml = `<span class="text-gray-300 font-normal">-</span>`;
-    if (item.link && item.link.startsWith('http')) {
-        // 加上 pointer-events-auto 讓點擊可以生效，不被 SortableJS 的拖曳事件卡住
-        linkHtml = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline font-bold pointer-events-auto">🔗 連結</a>`;
-    } else if (item.link && item.link !== "未填") {
-        linkHtml = `<span class="text-gray-400 text-[10px] truncate block w-12 text-center" title="${item.link}">${item.link}</span>`;
+function initDatabaseSortable() {
+  const tbody = document.getElementById('databaseBody');
+  dbSortableInstance = new Sortable(tbody, {
+    animation: 150,
+    handle: '.cursor-move-row',
+    onEnd: function() {
+      // 依據拖曳完的新 DOM 順序重新調整陣列
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const newDatabase = [];
+      rows.forEach((row) => {
+        const id = parseInt(row.getAttribute('data-db-id'));
+        const found = newsDatabase.find(item => item.id === id);
+        if (found) newDatabase.push(found);
+      });
+      newsDatabase = newDatabase;
+      reorderDatabaseIds();
+      saveToLocalStorage();
+      renderDatabase();
     }
-
-    li.innerHTML = `
-        <div class="flex items-center space-x-2 pointer-events-none flex-1 truncate">
-            <span class="text-gray-300 font-bold w-6 text-center text-sm">☰</span>
-            <div class="w-14 text-left">
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
-            </div>
-            <span class="font-bold text-gray-900 w-28 truncate">${item.media}</span>
-            <span class="font-medium truncate text-gray-800 flex-1" title="${item.title}">
-                ${item.title} <span class="text-gray-400 font-normal text-[11px]">（記者：${item.reporter}）</span>
-            </span>
-        </div>
-        <div class="w-12 text-center z-10">${linkHtml}</div> <div class="text-[11px] text-gray-400 pointer-events-none w-20 text-right">${item.date}</div>
-    `;
-    return li;
+  });
 }
 
-        function insertSingleToCurrentSort() {
-            const idInput = document.getElementById('singleInsertId');
-            const targetId = parseInt(idInput.value);
+function saveTheme() {
+  localStorage.setItem('prEventTheme', document.getElementById('eventTheme').value);
+}
 
-            if (isNaN(targetId)) {
-                alert("請先輸入正確的 Data Base 資料庫編號數字！");
-                return;
-            }
+function toggleInputModal(show) {
+  const modal = document.getElementById('inputModal');
+  if (show) modal.classList.remove('hidden');
+  else modal.classList.add('hidden');
+}
 
-            const matchedNews = newsDatabase.find(item => item.id === targetId);
-            if (!matchedNews) {
-                alert(`【找不到資料】在總資料庫中找不到編號為「${targetId}」的新聞。`);
-                return;
-            }
+function importNews() {
+  const date = document.getElementById('inputModal').querySelector('#newsDate').value;
+  const type = document.getElementById('inputModal').querySelector('#newsType').value;
+  const media = document.getElementById('inputModal').querySelector('#mediaName').value.trim();
+  const title = document.getElementById('inputModal').querySelector('#newsTitle').value.trim();
+  const link = document.getElementById('inputModal').querySelector('#newsLink').value.trim();
+  const reporter = document.getElementById('inputModal').querySelector('#reporter').value.trim();
+  const keywords = document.getElementById('inputModal').querySelector('#keywords').value.trim();
+  
+  if (!title) {
+    alert("【匯入失敗】報導標題為必填項目，請輸入標題！");
+    return;
+  }
+  
+  // 防呆優化：只有在以 http 開頭的網址時才阻擋重複
+  if (link.startsWith('http')) {
+    const isDuplicate = newsDatabase.some(item => item.link === link);
+    if (isDuplicate) {
+      alert("此報導已收錄");
+      return;
+    }
+  }
+  
+  const newsItem = {
+    id: currentId++,
+    date: date || "未填",
+    type: type,
+    media: media || "未填",
+    title: title,
+    link: link || "未填",
+    reporter: reporter || "未填",
+    keywords: keywords || ""
+  };
+  newsDatabase.push(newsItem);
+  saveToLocalStorage();
+  renderDatabase();
+  
+  document.getElementById('inputModal').querySelector('#mediaName').value = "";
+  document.getElementById('inputModal').querySelector('#newsTitle').value = "";
+  document.getElementById('inputModal').querySelector('#newsLink').value = "";
+  document.getElementById('inputModal').querySelector('#reporter').value = "";
+  document.getElementById('inputModal').querySelector('#keywords').value = "";
+}
 
-            const sortList = document.getElementById('sortableList');
-            const existingItems = Array.from(sortList.children);
-            const isDuplicate = existingItems.some(li => {
-                return li.getAttribute('data-title-key') === matchedNews.title && 
-                       li.getAttribute('data-media-key') === matchedNews.media;
-            });
+// 抽取所有出現過的關鍵字
+function updateKeywordFilters() {
+  const allKeywords = new Set();
+  newsDatabase.forEach(item => {
+    if (item.keywords) {
+      item.keywords.split(/[,，]/).forEach(k => {
+        if (k.trim()) allKeywords.add(k.trim());
+      });
+    }
+  });
+  
+  const container = document.getElementById('keywordFilterContainer');
+  container.innerHTML = "";
+  
+  if (allKeywords.size === 0) {
+    container.innerHTML = `<p class="text-gray-400 text-[10px]">暫無任何關鍵字</p>`;
+    return;
+  }
+  
+  allKeywords.forEach(kw => {
+    const isChecked = selectedKeywords.includes(kw) ? "checked" : "";
+    const div = document.createElement('div');
+    div.className = "flex items-center space-x-1.5";
+    div.innerHTML = `
+      <input type="checkbox" id="kw-${kw}" value="${kw}" ${isChecked} onchange="toggleKeywordFilter(this)" class="rounded text-indigo-600 focus:ring-indigo-500">
+      <label for="kw-${kw}" class="cursor-pointer select-none text-gray-600 hover:text-gray-900">${kw}</label>
+    `;
+    container.appendChild(div);
+  });
+}
 
-            if (isDuplicate) {
-                alert(`【提示】這則新聞已經存在於當前排序清單。`);
-                return;
-            }
+function toggleKeywordFilter(cb) {
+  if (cb.checked) {
+    if (!selectedKeywords.includes(cb.value)) selectedKeywords.push(cb.value);
+  } else {
+    selectedKeywords = selectedKeywords.filter(k => k !== cb.value);
+  }
+  renderDatabase();
+}
 
-            const newLi = createSortableLiElement(matchedNews);
-            sortList.appendChild(newLi);
+function renderDatabase() {
+  const tbody = document.getElementById('databaseBody');
+  tbody.innerHTML = "";
+  
+  // 依關鍵字進行多選篩選
+  let displayData = newsDatabase;
+  if (selectedKeywords.length > 0) {
+    displayData = newsDatabase.filter(item => {
+      if (!item.keywords) return false;
+      const itemKws = item.keywords.split(/[,，]/).map(k => k.trim());
+      // 必須包含選中關鍵字的其中一個 (或可改成 every 全包含，此處採 Excel 慣用的其中一個就符合)
+      return selectedKeywords.some(sk => itemKws.includes(sk));
+    });
+  }
+  
+  displayData.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.className = "hover:bg-gray-50 transition border-b border-gray-100 h-9 cursor-move-row";
+    tr.setAttribute('data-db-id', item.id);
 
-            idInput.value = "";
-            newLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            
-            newLi.classList.add('bg-amber-100');
-            setTimeout(() => { newLi.classList.remove('bg-amber-100'); }, 1000);
+    let linkDisplay = item.link;
+    if (item.link.startsWith('http')) {
+      linkDisplay = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline block truncate" title="${item.link}">${item.link}</a>`;
+    } else {
+      linkDisplay = `<span class="block truncate" title="${item.link}">${item.link}</span>`;
+    }
+    tr.innerHTML = `
+      <td class="p-2 text-center font-medium text-red-500 cursor-pointer bg-red-50/30 hover:bg-red-100 font-bold select-none"
+          oncontextmenu="handleIdRightClick(event, ${item.id})" title="點擊右鍵可刪除此筆">
+        ${item.id}
+      </td>
+      <td class="p-2 truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'date')">${item.date}</td>
+      <td class="p-2 select-none" oncontextmenu="handleTypeRightClick(event, ${item.id})">
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
+      </td>
+      <td class="p-2 font-medium truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'media')">${item.media}</td>
+      <td class="p-2 truncate font-medium text-gray-900" title="${item.title}" oncontextmenu="handleCellRightClick(event, ${item.id}, 'title')">${item.title}</td>
+      <td class="p-2 truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'link')">${linkDisplay}</td>
+      <td class="p-2 truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'reporter')">${item.reporter}</td>
+      <td class="p-2 truncate text-gray-400" title="${item.keywords}" oncontextmenu="handleCellRightClick(event, ${item.id}, 'keywords')">${item.keywords}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  updateCounters(displayData);
+  updateKeywordFilters();
+}
+
+function reorderDatabaseIds() {
+  newsDatabase.forEach((item, index) => {
+    item.id = index + 1;
+  });
+  currentId = newsDatabase.length + 1;
+}
+
+function handleCellRightClick(e, id, field) {
+  e.preventDefault();
+  const item = newsDatabase.find(data => data.id === id);
+  if (!item) return;
+  let fieldName = "";
+  switch(field) {
+    case 'date': fieldName = "收錄日期"; break;
+    case 'media': fieldName = "媒體名稱"; break;
+    case 'title': fieldName = "報導標題"; break;
+    case 'link': fieldName = "報導網址或新聞版位"; break;
+    case 'reporter': fieldName = "記者名字"; break;
+    case 'keywords': fieldName = "關鍵字"; break;
+  }
+  const newValue = prompt(`【修改新聞資料】\n請輸入新的 ${fieldName}：`, item[field]);
+  if (newValue !== null) {
+    const trimmedValue = newValue.trim();
+    if (field === 'title' && !trimmedValue) {
+      alert("標題不可以改為空白喔！");
+      return;
+    }
+    item[field] = trimmedValue || "未填";
+    saveToLocalStorage();
+    renderDatabase();
+  }
+}
+
+// 專為類型設計的右鍵選單功能
+function handleTypeRightClick(e, id) {
+  e.preventDefault();
+  e.stopPropagation();
+  currentEditingMenuId = id;
+  const menu = document.getElementById('customTypeMenu');
+  menu.style.display = 'block';
+  menu.style.left = e.pageX + 'px';
+  menu.style.top = e.pageY + 'px';
+}
+
+function selectCustomType(type) {
+  if (currentEditingMenuId) {
+    const item = newsDatabase.find(data => data.id === currentEditingMenuId);
+    if (item) {
+      item.type = type;
+      saveToLocalStorage();
+      renderDatabase();
+    }
+  }
+  hideCustomMenu();
+}
+
+function hideCustomMenu() {
+  document.getElementById('customTypeMenu').style.display = 'none';
+}
+
+function handleIdRightClick(e, id) {
+  e.preventDefault();
+  if (confirm(` ❓  是否刪除此筆資料？(編號: ${id})\n ⚠️  刪除後系統將重新排序`)) {
+    newsDatabase = newsDatabase.filter(item => item.id !== id);
+    reorderDatabaseIds();
+    saveToLocalStorage();
+    renderDatabase();
+  }
+}
+
+function getTypeClass(type) {
+  switch(type) {
+    case '報紙': return 'bg-orange-100 text-orange-800';
+    case '影音': return 'bg-red-100 text-red-800';
+    case '雜誌': return 'bg-green-100 text-green-800';
+    case '其他': return 'bg-purple-100 text-purple-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+}
+
+function updateCounters(currentDisplayData) {
+  const counts = { '報紙': 0, '影音': 0, '雜誌': 0, '其他': 0 };
+  // 統計基於當前篩選過後的資料庫內容
+  currentDisplayData.forEach(item => { if (counts[item.type] !== undefined) counts[item.type]++; });
+  document.getElementById('count-newspaper').innerText = counts['報紙'];
+  document.getElementById('count-video').innerText = counts['影音'];
+  document.getElementById('count-magazine').innerText = counts['雜誌'];
+  document.getElementById('count-other').innerText = counts['其他'];
+  
+  document.getElementById('count-filtered').innerText = currentDisplayData.length;
+  document.getElementById('count-total').innerText = newsDatabase.length;
+}
+
+function saveToLocalStorage() {
+  localStorage.setItem('prNewsDatabase', JSON.stringify(newsDatabase));
+  localStorage.setItem('prExportHistory', JSON.stringify(exportHistory));
+}
+
+function clearDatabase() {
+  if (confirm(" ⚠️  確定要清空所有資料嗎？")) {
+    localStorage.clear();
+    newsDatabase = []; exportHistory = []; currentId = 1; selectedKeywords = [];
+    document.getElementById('eventTheme').value = "";
+    renderDatabase();
+    alert("已完全清空！");
+  }
+}
+
+// ================= 專案 匯出 / 匯入 =================
+function exportProject() {
+  const dataStr = JSON.stringify({ theme: document.getElementById('eventTheme').value, database: newsDatabase, history: exportHistory });
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `新聞收錄專案備份_${document.getElementById('eventTheme').value || '未命名'}.json`;
+  a.click();
+}
+
+function importProject(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = JSON.parse(evt.target.result);
+      if (data.database) {
+        newsDatabase = data.database;
+        exportHistory = data.history || [];
+        document.getElementById('eventTheme').value = data.theme || "";
+        reorderDatabaseIds();
+        saveTheme(); saveToLocalStorage(); renderDatabase();
+        alert("專案備份匯入成功！");
+      }
+    } catch (err) { alert("無效的專案檔案！"); }
+  };
+  reader.readAsText(file);
+}
+
+// ================= Excel (CSV) 匯出 / 匯入 =================
+function exportCSV() {
+  if (newsDatabase.length === 0) return alert("沒有資料可導出！");
+  let csvContent = "\uFEFF編號,收錄日期,報導類型,媒體名稱,報導標題,報導網址或報紙版位,記者名字,關鍵字\n";
+  newsDatabase.forEach(item => {
+    csvContent += `"${item.id}","${item.date}","${item.type}","${item.media}","${item.title}","${item.link}","${item.reporter}","${item.keywords}"\n`;
+  });
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `新聞資料庫_${document.getElementById('eventTheme').value || '未命名'}.csv`;
+  link.click();
+}
+
+function importCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const text = evt.target.result;
+    const lines = text.split("\n");
+    let loadedCount = 0;
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+      const csvTitle = cols[4];
+      if (!csvTitle || csvTitle === "報導標題" || csvTitle === "未填") continue;
+      newsDatabase.push({
+        id: currentId++,
+        date: cols[1] || "未填",
+        type: cols[2] || "其他",
+        media: cols[3] || "未填",
+        title: csvTitle,
+        link: cols[5] || "未填",
+        reporter: cols[6] || "未填",
+        keywords: cols[7] || ""
+      });
+      loadedCount++;
+    }
+    reorderDatabaseIds();
+    saveToLocalStorage(); renderDatabase();
+    alert(`成功從 Excel(CSV) 重新編號並匯入 ${loadedCount} 筆有效報導！`);
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+// ================= 重要性排序工具邏輯 (整合於主畫面) =================
+function filterAndOpenSortModal() {
+  const startId = parseInt(document.getElementById('startId').value);
+  const endId = parseInt(document.getElementById('endId').value);
+  const specificInput = document.getElementById('specificIds').value.trim();
+  
+  if (newsDatabase.length === 0) return alert("資料庫是空的喔！");
+  
+  // 1. 取得區間內的新聞
+  filteredNewsResult = newsDatabase.filter(item => {
+    const matchStart = !isNaN(startId) ? item.id >= startId : true;
+    const matchEnd = !isNaN(endId) ? item.id <= endId : true;
+    return matchStart && matchEnd;
+  });
+  
+  // 2. 追加指定的新聞編號 (排除重複)
+  if (specificInput) {
+    const ids = specificInput.split(/[,，]/).map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+    ids.forEach(sid => {
+      const matchedNews = newsDatabase.find(item => item.id === sid);
+      if (matchedNews) {
+        const isAlreadyAdded = filteredNewsResult.some(item => item.id === matchedNews.id);
+        if (!isAlreadyAdded) {
+          filteredNewsResult.push(matchedNews);
         }
+      }
+    });
+  }
+  
+  if (filteredNewsResult.length === 0) return alert("沒有找到符合條件的新聞報導！");
+  
+  const now = new Date();
+  const MM = String(now.getMonth() + 1).padStart(2, '0');
+  const DD = String(now.getDate()).padStart(2, '0');
+  document.getElementById('lineReportDate').value = MM + DD;
+  document.getElementById('lineReportTime').value = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  document.getElementById('singleInsertId').value = "";
+  
+  renderSortableList(filteredNewsResult);
+  renderHistoryButtons();
+  document.getElementById('sortSection').classList.remove('hidden');
+  document.getElementById('sortSection').scrollIntoView({ behavior: 'smooth' });
+}
 
-        function handleSortItemRightClick(e, titleKey, mediaKey) {
-            e.preventDefault();
-            e.stopPropagation();
+function renderSortableList(dataList) {
+  const sortList = document.getElementById('sortableList');
+  sortList.innerHTML = "";
+  dataList.forEach(item => {
+    const li = createSortableLiElement(item);
+    sortList.appendChild(li);
+  });
+  if (sortableInstance) sortableInstance.destroy();
+  sortableInstance = new Sortable(sortList, { animation: 150 });
+}
 
-            const targetItem = newsDatabase.find(item => item.title === titleKey && item.media === mediaKey);
-            if (!targetItem) return;
+function createSortableLiElement(item) {
+  const li = document.createElement('li');
+  li.className = "bg-white flex items-center justify-between border-b border-gray-100 cursor-move hover:bg-indigo-50/60 transition select-none py-1 px-2 text-xs text-gray-700";
+  li.setAttribute('data-title-key', item.title);
+  li.setAttribute('data-media-key', item.media);
+  li.oncontextmenu = function(e) { handleSortItemRightClick(e, item.title, item.media); };
+  
+  let linkHtml = `<span class="text-gray-300 font-normal">-</span>`;
+  if (item.link && item.link.startsWith('http')) {
+    linkHtml = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline font-bold pointer-events-auto"> 🔗  連結</a>`;
+  } else if (item.link && item.link !== "未填") {
+    linkHtml = `<span class="text-gray-400 text-[10px] truncate block w-12 text-center" title="${item.link}">${item.link}</span>`;
+  }
+  li.innerHTML = `
+    <div class="flex items-center space-x-2 pointer-events-none flex-1 truncate">
+      <span class="text-gray-300 font-bold w-6 text-center text-sm"> ☰ </span>
+      <div class="w-14 text-left">
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
+      </div>
+      <span class="font-bold text-gray-900 w-28 truncate">${item.media}</span>
+      <span class="font-medium truncate text-gray-800 flex-1" title="${item.title}">
+        ${item.title} <span class="text-gray-400 font-normal text-[11px]">（記者：${item.reporter}）</span>
+      </span>
+    </div>
+    <div class="w-12 text-center z-10">${linkHtml}</div> <div class="text-[11px] text-gray-400 pointer-events-none w-20 text-right">${item.date}</div>
+  `;
+  return li;
+}
 
-            const titleSnippet = `【${targetItem.media}】${targetItem.title.substring(0,15)}...`;
+function insertSingleToCurrentSort() {
+  const idInput = document.getElementById('singleInsertId');
+  const targetId = parseInt(idInput.value);
+  if (isNaN(targetId)) {
+    return alert("請先輸入正確的 Data Base 資料庫編號數字！");
+  }
+  const matchedNews = newsDatabase.find(item => item.id === targetId);
+  if (!matchedNews) {
+    return alert(`【找不到資料】在總資料庫中找不到編號為「${targetId}」的新聞。`);
+  }
+  const sortList = document.getElementById('sortableList');
+  const existingItems = Array.from(sortList.children);
+  const isDuplicate = existingItems.some(li => {
+    return li.getAttribute('data-title-key') === matchedNews.title && li.getAttribute('data-media-key') === matchedNews.media;
+  });
+  if (isDuplicate) {
+    return alert(`【提示】這則新聞已經存在於當前排序清單。`);
+  }
+  const newLi = createSortableLiElement(matchedNews);
+  sortList.appendChild(newLi);
+  idInput.value = "";
+  newLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  newLi.classList.add('bg-amber-100');
+  setTimeout(() => { newLi.classList.remove('bg-amber-100'); }, 1000);
+}
 
-            const promptMsg = `💡 您正在針對排序中的新聞進行右鍵精準操作：\n\n` +
-                              `報導：${titleSnippet}\n` +
-                              `-----------------------------------------------\n` +
-                              `請輸入對應號碼進行操作：\n` +
-                              `輸入 1 : 【僅從本次排序中移除】(不影響 Data Base 資料庫)\n` +
-                              `輸入 2 : 【從 Data Base 完全刪除】(總庫將重新自動排列順號！)\n`
+function handleSortItemRightClick(e, titleKey, mediaKey) {
+  e.preventDefault();
+  e.stopPropagation();
+  const targetItem = newsDatabase.find(item => item.title === titleKey && item.media === mediaKey);
+  if (!targetItem) return;
+  const titleSnippet = `【${targetItem.media}】${targetItem.title.substring(0,15)}...`;
+  const promptMsg = ` 💡  您正在針對排序中的新聞進行右鍵精準操作：\n\n` +
+                    `報導：${titleSnippet}\n` +
+                    `-----------------------------------------------\n` +
+                    `請輸入對應號碼進行操作：\n` +
+                    `輸入 1 : 【僅從本次排序中移除】(不影響 Data Base 資料庫)\n` +
+                    `輸入 2 : 【從 Data Base 完全刪除】(總庫將重新自動排列順號！)\n`;
+  const action = prompt(promptMsg);
+  if (action === '1') {
+    e.target.closest('li').remove();
+    alert("已成功將該筆報導從「本次回報排序」中隱藏。");
+  } else if (action === '2') {
+    if (confirm(` ⚠️  您即將從【Data Base 總資料庫】刪除此筆資料\n確定執行嗎？`)) {
+      newsDatabase = newsDatabase.filter(item => !(item.title === titleKey && item.media === mediaKey));
+      reorderDatabaseIds();
+      saveToLocalStorage();
+      renderDatabase();
+      e.target.closest('li').remove();
+      alert("該報導已由Data Base移除並重新順號！");
+    }
+  }
+}
 
-            const action = prompt(promptMsg);
+function renderHistoryButtons() {
+  const container = document.getElementById('historyButtonsContainer');
+  container.innerHTML = "";
+  const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
+  const currentHistory = exportHistory.filter(h => h.theme === currentTheme);
+  if (currentHistory.length === 0) {
+    container.innerHTML = `<p class="text-gray-400 text-[10px] text-center py-2">無歷史紀錄。</p>`;
+    return;
+  }
+  currentHistory.forEach((h, idx) => {
+    const btn = document.createElement('button');
+    btn.className = "w-full text-left bg-white border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 p-1.5 rounded text-[10px] transition block text-gray-700 shadow-sm truncate";
+    btn.innerText = ` ⏱️  紀錄 ${currentHistory.length - idx} (${h.count}則) - ${h.timeOnly}`;
+    btn.title = `點擊載入此排序結果 / 右鍵可刪除此紀錄`;
+    btn.onclick = function() {
+      const loadedData = h.sortedKeys.map(key => {
+        return newsDatabase.find(item => item.title === key.title && item.media === key.media);
+      }).filter(Boolean);
+      if (loadedData.length > 0) {
+        renderSortableList(loadedData);
+        if (h.reportDate) document.getElementById('lineReportDate').value = h.reportDate;
+        if (h.reportTime) document.getElementById('lineReportTime').value = h.reportTime;
+        alert(`已成功載入歷史紀錄 ${currentHistory.length - idx} 的排序結果！`);
+      } else {
+        alert("原紀錄中的新聞均已由總庫刪除，無法還原。");
+      }
+    };
+    btn.oncontextmenu = function(e) {
+      e.preventDefault();
+      if (confirm(` ❓  確定要刪除這條歷史排序紀錄嗎？`)) {
+        exportHistory = exportHistory.filter(item => item.timestamp !== h.timestamp);
+        saveToLocalStorage();
+        renderHistoryButtons();
+      }
+    };
+    container.appendChild(btn);
+  });
+}
 
-            if (action === '1') {
-                e.target.closest('li').remove();
-                alert("已成功將該筆報導從「本次回報排序」中隱藏。");
-            } 
-            else if (action === '2') {
-                if (confirm(`⚠️ 您即將從【Data Base 總資料庫】刪除此筆資料\n確定執行嗎？`)) {
-                    newsDatabase = newsDatabase.filter(item => !(item.title === titleKey && item.media === mediaKey));
-                    reorderDatabaseIds();
-                    saveToLocalStorage();
-                    renderDatabase();
-                    updateCounters();
-                    
-                    e.target.closest('li').remove();
-                    alert("該報導已由Data Base移除並重新順號！");
-                }
-            }
-        }
+function saveSortAndExport() {
+  const listItems = Array.from(document.getElementById('sortableList').children);
+  const finalSortedData = listItems.map(li => {
+    const tKey = li.getAttribute('data-title-key');
+    const mKey = li.getAttribute('data-media-key');
+    return newsDatabase.find(item => item.title === tKey && item.media === mKey);
+  }).filter(Boolean);
+  const sortedKeys = finalSortedData.map(item => ({ title: item.title, media: item.media }));
+  const rDate = document.getElementById('lineReportDate').value.trim() || "0000";
+  const rTime = document.getElementById('lineReportTime').value.trim() || "00:00";
+  const now = new Date();
+  const record = {
+    timestamp: now.toLocaleString(),
+    timeOnly: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+    theme: document.getElementById('eventTheme').value || "未命名活動",
+    count: finalSortedData.length,
+    sortedKeys: sortedKeys,
+    reportDate: rDate,
+    reportTime: rTime
+  };
+  exportHistory.unshift(record);
+  saveToLocalStorage();
+  renderHistoryButtons();
+  generateTextOutput(finalSortedData, rDate, rTime);
+}
 
-        function renderHistoryButtons() {
-            const container = document.getElementById('historyButtonsContainer');
-            container.innerHTML = "";
-            
-            const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
-            const currentHistory = exportHistory.filter(h => h.theme === currentTheme);
-
-            if (currentHistory.length === 0) {
-                container.innerHTML = `<p class="text-gray-400 text-[10px] text-center py-2">無歷史紀錄。</p>`;
-                return;
-            }
-
-            currentHistory.forEach((h, idx) => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left bg-white border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 p-1.5 rounded text-[10px] transition block text-gray-700 shadow-sm truncate";
-                btn.innerText = `⏱️ 紀錄 ${currentHistory.length - idx} (${h.count}則) - ${h.timeOnly}`;
-                btn.title = `點擊載入此排序結果 / 右鍵可刪除此紀錄`;
-                
-                btn.onclick = function() {
-                    const loadedData = h.sortedKeys.map(key => {
-                        return newsDatabase.find(item => item.title === key.title && item.media === key.media);
-                    }).filter(Boolean);
-
-                    if (loadedData.length > 0) {
-                        renderSortableList(loadedData);
-                        if (h.reportDate) document.getElementById('lineReportDate').value = h.reportDate;
-                        if (h.reportTime) document.getElementById('lineReportTime').value = h.reportTime;
-                        alert(`已成功載入歷史紀錄 ${currentHistory.length - idx} 的排序結果！`);
-                    } else {
-                        alert("原紀錄中的新聞均已由總庫刪除，無法還原。");
-                    }
-                };
-
-                btn.oncontextmenu = function(e) {
-                    e.preventDefault();
-                    if (confirm(`❓ 確定要刪除這條歷史排序紀錄嗎？`)) {
-                        exportHistory = exportHistory.filter(item => item.timestamp !== h.timestamp);
-                        saveToLocalStorage();
-                        renderHistoryButtons();
-                    }
-                };
-
-                container.appendChild(btn);
-            });
-        }
-
-        function closeSortModal() {
-            document.getElementById('sortModal').classList.add('hidden');
-        }
-
-        function saveSortAndExport() {
-            const listItems = Array.from(document.getElementById('sortableList').children);
-            
-            const finalSortedData = listItems.map(li => {
-                const tKey = li.getAttribute('data-title-key');
-                const mKey = li.getAttribute('data-media-key');
-                return newsDatabase.find(item => item.title === tKey && item.media === mKey);
-            }).filter(Boolean);
-
-            const sortedKeys = finalSortedData.map(item => ({ title: item.title, media: item.media }));
-
-            const rDate = document.getElementById('lineReportDate').value.trim() || "0000";
-            const rTime = document.getElementById('lineReportTime').value.trim() || "00:00";
-
-            const now = new Date();
-            const record = {
-                timestamp: now.toLocaleString(),
-                timeOnly: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                theme: document.getElementById('eventTheme').value || "未命名活動",
-                count: finalSortedData.length,
-                sortedKeys: sortedKeys,
-                reportDate: rDate,
-                reportTime: rTime
-            };
-            
-            exportHistory.unshift(record);
-            saveToLocalStorage();
-            renderHistoryButtons();
-
-            generateTextOutput(finalSortedData, rDate, rTime);
-        }
-
-        function generateTextOutput(dataList, rDate, rTime) {
-            let theme = document.getElementById('eventTheme').value || "未命名活動";
-            let totalCount = dataList.length;
-
-            let paperList = dataList.filter(item => item.type === '報紙');
-            let videoList = dataList.filter(item => item.type === '影音');
-            let webList = dataList.filter(item => item.type === '網路');
-            let magazineList = dataList.filter(item => item.type === '雜誌');
-
-            let outputText = `${rDate}【${theme}】(${rTime})新增${totalCount}則相關報導，請參考\n\n`;
-            
-            if (paperList.length > 0)    outputText += `報紙：${paperList.length}則(圖檔如附)\n`;
-            if (videoList.length > 0)    outputText += `影音：${videoList.length}則\n`;
-            if (webList.length > 0)      outputText += `網路：${webList.length}則\n`;
-            if (magazineList.length > 0) outputText += `雜誌：${magazineList.length}則\n`;
-            
-            outputText += `\n`;
-
-            if (paperList.length > 0) {
-                outputText += `■ 報紙：${paperList.length}則(圖檔如附)\n`;
-                paperList.forEach((item, index) => {
-                    outputText += `${index + 1}.${item.media}_${item.link}_${item.title}\n`;
-                });
-                outputText += `\n`;
-            }
-
-            if (videoList.length > 0) {
-                outputText += `■ 影音：${videoList.length}則\n`;
-                videoList.forEach((item, index) => {
-                    outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`;
-                });
-            }
-
-            if (webList.length > 0) {
-                outputText += `■ 網路：${webList.length}則\n`;
-                webList.forEach((item, index) => {
-                    outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`;
-                });
-            }
-
-            if (magazineList.length > 0) {
-                outputText += `■ 雜誌：${magazineList.length}則\n`;
-                magazineList.forEach((item, index) => {
-                    outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`;
-                });
-            }
-
-
-            navigator.clipboard.writeText(outputText).then(() => {
-                alert(`✨ 成果回報文字生成成功！\n\n已『自動複製到剪貼簿』！\n可以直接去 LINE 貼上 (Ctrl+V) 回報給主管囉！`);
-            }).catch(err => {
-                alert("自動複製失敗，請手動複製內容。");
-            });
-        }
-    </script>
+function generateTextOutput(dataList, rDate, rTime) {
+  let theme = document.getElementById('eventTheme').value || "未命名活動";
+  let totalCount = dataList.length;
+  let paperList = dataList.filter(item => item.type === '報紙');
+  let videoList = dataList.filter(item => item.type === '影音');
+  let magazineList = dataList.filter(item => item.type === '雜誌');
+  let otherList = dataList.filter(item => item.type === '其他');
+  
+  let outputText = `${rDate}【${theme}】(${rTime})新增${totalCount}則相關報導，請參考\n\n`;
+  if (paperList.length > 0)    outputText += `報紙：${paperList.length}則(圖檔如附)\n`;
+  if (videoList.length > 0)    outputText += `影音：${videoList.length}則\n`;
+  if (magazineList.length > 0) outputText += `雜誌：${magazineList.length}則\n`;
+  if (otherList.length > 0)    outputText += `其他：${otherList.length}則\n`;
+  outputText += `\n`;
+  
+  if (paperList.length > 0) {
+    outputText += `■ 報紙：${paperList.length}則(圖檔如附)\n`;
+    paperList.forEach((item, index) => { outputText += `${index + 1}.${item.media}_${item.link}_${item.title}\n`; });
+    outputText += `\n`;
+  }
+  if (videoList.length > 0) {
+    outputText += `■ 影音：${videoList.length}則\n`;
+    videoList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+  }
+  if (magazineList.length > 0) {
+    outputText += `■ 雜誌：${magazineList.length}則\n`;
+    magazineList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+  }
+  if (otherList.length > 0) {
+    outputText += `■ 其他：${otherList.length}則\n`;
+    otherList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+  }
+  
+  navigator.clipboard.writeText(outputText).then(() => {
+    alert(` ✨  成果回報文字生成成功！\n\n已『自動複製到剪貼簿』！\n可以直接去 LINE 貼上回報給主管囉！`);
+  }).catch(err => {
+    alert("自動複製失敗，請手動複製內容。");
+  });
+}
+</script>
 </body>
 </html>
