@@ -9,7 +9,6 @@
 <style>
   #customTypeMenu { display: none; position: absolute; z-index: 100; min-width: 120px; }
   .cursor-move-row { cursor: move; }
-  /* Hover 提示樣式 */
   .has-tooltip { position: relative; }
   .tooltip {
     display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
@@ -20,9 +19,11 @@
   .star-rating { cursor: pointer; display: inline-flex; gap: 2px; }
   .star { font-size: 14px; color: #D1D5DB; transition: color 0.1s; }
   .star.active { color: #F59E0B; }
+  /* 新增收合動態效果 */
+  .modal-collapsed { height: 38px !important; overflow: hidden !important; }
 </style>
 </head>
-<body class="bg-gray-50 min-h-screen p-4 font-sans text-gray-800" onclick="hideCustomMenu()">
+<body class="bg-gray-50 min-h-screen p-4 font-sans text-gray-800" onclick="hideCustomMenu(); hideKeywordDropdown(event);">
 <div class="max-w-7xl mx-auto space-y-4">
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
@@ -68,24 +69,24 @@
 <input type="file" id="importProjectFile" class="hidden" accept=".json" onchange="importProject(event)">
 </div>
 </div>
-
-<div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-2 flex flex-col h-[230px]">
-  <h3 class="text-xs font-semibold text-gray-700 border-b pb-1">🔍 DATABASE 關鍵字篩選</h3>
-  <div id="keywordFilterContainer" class="flex-1 overflow-y-auto space-y-1 text-xs pr-1">
-    </div>
-</div>
 </div>
 
 <div class="md:col-span-3 space-y-4">
 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
-<div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳整行調整順序)</span></h3>
-<div class="flex space-x-2 text-xs">
+<div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
+<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序)</span></h3>
+<div class="flex space-x-2 text-xs relative">
+<button onclick="toggleKeywordDropdown(event)" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded hover:bg-indigo-100 transition font-medium">
+  🔍 關鍵字篩選
+</button>
+<div id="keywordDropdownContainer" class="absolute right-0 top-full mt-1 bg-white border border-gray-200 shadow-xl rounded-xl p-3 z-30 w-56 max-h-60 overflow-y-auto space-y-1.5 hidden text-left" onclick="event.stopPropagation();">
+  </div>
+
 <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
-  📊  匯出 Excel (CSV)
+  📊  匯出 CSV
 </button>
 <button onclick="document.getElementById('importCSVFile').click()" class="bg-teal-50 text-teal-700 border border-teal-200 px-2.5 py-1 rounded hover:bg-teal-100 transition">
-  📊  匯入 Excel (CSV)
+  📊  匯入 CSV
 </button>
 <input type="file" id="importCSVFile" class="hidden" accept=".csv" onchange="importCSV(event)">
 </div>
@@ -121,7 +122,7 @@
 <input type="number" id="endId" placeholder="10" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
 </div>
 <div class="md:col-span-2">
-<label class="block text-xs font-medium text-gray-400 mb-1">額外指定編號 (以逗號或頓號隔開，如 1,3,8)</label>
+<label class="block text-xs font-medium text-gray-400 mb-1">額外指定編號 (以逗號或頓號隔開)</label>
 <input type="text" id="specificIds" placeholder="1、3、8" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
 </div>
 <div>
@@ -135,7 +136,6 @@
 <div class="bg-gray-100 px-3 py-2 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
 <div>
 <h3 class="text-sm font-bold text-gray-800"> 🔬  調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
-<p class="text-[11px] text-gray-400"> 💡  提示：新聞上【點擊右鍵】可從排序隱藏，或連同總庫完全刪除！</p>
 </div>
 <div class="flex items-center space-x-2 text-[11px] gap-y-1 flex-wrap">
 <div class="flex items-center space-x-1">
@@ -162,12 +162,11 @@
 <div class="flex-1">報導標題 / 記者</div>
 <div class="w-16 text-center">連結</div> 
 </div>
-<ul id="sortableList" class="divide-y divide-gray-200 min-h-[200px] max-h-[350px] overflow-y-auto"></ul>
+<ul id="sortableList" class="divide-y divide-gray-200 min-h-[180px] max-h-[350px] overflow-y-auto"></ul>
 </div>
 
 <div class="px-3 py-2 border-t bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
 <div class="flex items-center space-x-2 w-full md:w-auto">
-  <span class="text-[11px] font-bold text-gray-500 shrink-0"> 📜  歷史紀錄(Hover看時間):</span>
   <div id="historyButtonsContainer" class="flex flex-wrap gap-1"></div>
 </div>
 <button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded font-medium text-xs shadow-sm shrink-0 ml-auto">
@@ -181,12 +180,15 @@
 </div>
 </div>
 
-<div id="inputModal" class="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-40 hidden">
-<div class="bg-indigo-600 text-white p-3 rounded-t-2xl flex justify-between items-center">
+<div id="inputModal" class="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-40 hidden transition-all duration-200">
+<div class="bg-indigo-600 text-white p-3 rounded-t-2xl flex justify-between items-center select-none">
 <h3 class="text-xs font-bold flex items-center"> 📝  新增報導資訊</h3>
-<button onclick="toggleInputModal(false)" class="text-indigo-200 hover:text-white text-xs font-medium bg-indigo-700 px-2 py-0.5 rounded"> ✕  關閉</button>
+<div class="flex items-center space-x-1.5">
+  <button id="collapseToggleBtn" onclick="toggleCollapseModal()" class="text-indigo-200 hover:text-white text-xs font-bold bg-indigo-700 px-1.5 py-0.5 rounded" title="收合/展開窗格">➖</button>
+  <button onclick="toggleInputModal(false)" class="text-indigo-200 hover:text-white text-xs font-medium bg-indigo-700 px-2 py-0.5 rounded"> ✕ </button>
 </div>
-<div class="p-4 space-y-2.5 max-h-[75vh] overflow-y-auto text-xs">
+</div>
+<div id="inputModalBody" class="p-4 space-y-2.5 max-h-[75vh] overflow-y-auto text-xs">
 <div class="grid grid-cols-2 gap-2">
 <div>
 <label class="block text-gray-400 mb-1">收錄日期</label>
@@ -260,12 +262,14 @@
 <script>
 let newsDatabase = JSON.parse(localStorage.getItem('prNewsDatabase')) || [];
 let exportHistory = JSON.parse(localStorage.getItem('prExportHistory')) || [];
+let exportedIds = JSON.parse(localStorage.getItem('prExportedIds')) || []; // 記錄被導出過的ID
 let currentId = newsDatabase.length > 0 ? Math.max(...newsDatabase.map(item => item.id)) + 1 : 1;
 let filteredNewsResult = [];
 let sortableInstance = null;
 let dbSortableInstance = null;
 let selectedKeywords = [];
 let currentEditingMenuId = null;
+let currentlyVisibleIds = []; // 紀錄目前畫面上通過關鍵字篩選看到的資料ID
 
 window.onload = function() {
   document.getElementById('eventTheme').value = localStorage.getItem('prEventTheme') || "";
@@ -301,8 +305,37 @@ function saveTheme() {
 
 function toggleInputModal(show) {
   const modal = document.getElementById('inputModal');
-  if (show) modal.classList.remove('hidden');
-  else modal.classList.add('hidden');
+  if (show) {
+    modal.classList.remove('hidden');
+    // 開啟時恢復展開狀態
+    modal.classList.remove('modal-collapsed');
+    document.getElementById('collapseToggleBtn').innerText = "➖";
+  } else {
+    modal.classList.add('hidden');
+  }
+}
+
+// 縮小與展開新增窗格的功能
+function toggleCollapseModal() {
+  const modal = document.getElementById('inputModal');
+  const btn = document.getElementById('collapseToggleBtn');
+  if (modal.classList.contains('modal-collapsed')) {
+    modal.classList.remove('modal-collapsed');
+    btn.innerText = "➖";
+  } else {
+    modal.classList.add('modal-collapsed');
+    btn.innerText = "⬜";
+  }
+}
+
+function toggleKeywordDropdown(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('keywordDropdownContainer');
+  menu.classList.toggle('hidden');
+}
+
+function hideKeywordDropdown(e) {
+  document.getElementById('keywordDropdownContainer').classList.add('hidden');
 }
 
 function toggleResetModal(show) {
@@ -316,12 +349,10 @@ function triggerResetWithBackup() {
 }
 
 function executeReset(withBackup) {
-  if (withBackup) {
-    exportProject();
-  }
+  if (withBackup) exportProject();
   localStorage.clear();
-  newsDatabase = []; exportHistory = []; currentId = 1; selectedKeywords = [];
-  filteredNewsResult = [];
+  newsDatabase = []; exportHistory = []; exportedIds = []; currentId = 1; selectedKeywords = [];
+  filteredNewsResult = []; currentlyVisibleIds = [];
   document.getElementById('eventTheme').value = "";
   document.getElementById('sortSection').classList.add('hidden');
   document.getElementById('sortableList').innerHTML = "";
@@ -373,7 +404,6 @@ function importNews() {
   document.getElementById('inputModal').querySelector('#keywords').value = "";
 }
 
-// 關鍵字解析（支援頓號、逗號）
 function updateKeywordFilters() {
   const allKeywords = new Set();
   newsDatabase.forEach(item => {
@@ -384,21 +414,21 @@ function updateKeywordFilters() {
     }
   });
   
-  const container = document.getElementById('keywordFilterContainer');
+  const container = document.getElementById('keywordDropdownContainer');
   container.innerHTML = "";
   
   if (allKeywords.size === 0) {
-    container.innerHTML = `<p class="text-gray-400 text-[10px]">暫無任何關鍵字</p>`;
+    container.innerHTML = `<p class="text-gray-400 text-[10px] text-center">暫無任何關鍵字</p>`;
     return;
   }
   
   allKeywords.forEach(kw => {
     const isChecked = selectedKeywords.includes(kw) ? "checked" : "";
     const div = document.createElement('div');
-    div.className = "flex items-center space-x-1.5 py-0.5";
+    div.className = "flex items-center space-x-2 py-0.5 hover:bg-gray-50 px-1 rounded";
     div.innerHTML = `
       <input type="checkbox" id="kw-${kw}" value="${kw}" ${isChecked} onchange="toggleKeywordFilter(this)" class="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5">
-      <label for="kw-${kw}" class="cursor-pointer select-none text-gray-600 hover:text-gray-900 truncate block max-w-[120px]" title="${kw}">${kw}</label>
+      <label for="kw-${kw}" class="cursor-pointer select-none text-gray-600 hover:text-gray-900 truncate block flex-1" title="${kw}">${kw}</label>
     `;
     container.appendChild(div);
   });
@@ -422,10 +452,12 @@ function renderDatabase() {
     displayData = newsDatabase.filter(item => {
       if (!item.keywords) return false;
       const itemKws = item.keywords.split(/[,，、]/).map(k => k.trim());
-      // 取連集 (OR)
       return selectedKeywords.some(sk => itemKws.includes(sk));
     });
   }
+  
+  // 隨時更新目前「看得見」的 ID 陣列，供區間匯出排序參考
+  currentlyVisibleIds = displayData.map(item => item.id);
   
   displayData.forEach(item => {
     const tr = document.createElement('tr');
@@ -438,12 +470,16 @@ function renderDatabase() {
     } else {
       linkDisplay = `<span class="block truncate" title="${item.link}">${item.link}</span>`;
     }
+    
+    // 判斷是否曾被導出過，是的話收錄日期套用紅色字體
+    const dateColorClass = exportedIds.includes(item.id) ? "text-red-600 font-semibold" : "";
+
     tr.innerHTML = `
       <td class="p-2 text-center font-medium text-red-500 cursor-pointer bg-red-50/30 hover:bg-red-100 font-bold select-none"
           oncontextmenu="handleIdRightClick(event, ${item.id})" title="點擊右鍵可刪除此筆">
         ${item.id}
       </td>
-      <td class="p-2 truncate">${item.date}</td>
+      <td class="p-2 truncate ${dateColorClass}">${item.date}</td>
       <td class="p-2 select-none" oncontextmenu="handleTypeRightClick(event, ${item.id})">
         <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
       </td>
@@ -494,6 +530,7 @@ function handleIdRightClick(e, id) {
   e.preventDefault();
   if (confirm(`是否刪除此筆資料？(編號: ${id})`)) {
     newsDatabase = newsDatabase.filter(item => item.id !== id);
+    exportedIds = exportedIds.filter(x => x !== id);
     reorderDatabaseIds();
     saveToLocalStorage();
     renderDatabase();
@@ -525,11 +562,11 @@ function updateCounters(currentDisplayData) {
 function saveToLocalStorage() {
   localStorage.setItem('prNewsDatabase', JSON.stringify(newsDatabase));
   localStorage.setItem('prExportHistory', JSON.stringify(exportHistory));
+  localStorage.setItem('prExportedIds', JSON.stringify(exportedIds));
 }
 
-// ================= 專案 匯出 / 匯入 (包含當前排序窗格) =================
+// ================= 專案 匯出 / 匯入 =================
 function exportProject() {
-  // 抓取當前畫面上排序狀態
   const listItems = Array.from(document.getElementById('sortableList').children);
   const currentSortingState = listItems.map(li => ({
     title: li.getAttribute('data-title-key'),
@@ -541,6 +578,7 @@ function exportProject() {
     theme: document.getElementById('eventTheme').value, 
     database: newsDatabase, 
     history: exportHistory,
+    exportedIds: exportedIds,
     currentSort: currentSortingState,
     reportDate: document.getElementById('lineReportDate').value,
     reportTime: document.getElementById('lineReportTime').value,
@@ -564,11 +602,11 @@ function importProject(e) {
       if (data.database) {
         newsDatabase = data.database;
         exportHistory = data.history || [];
+        exportedIds = data.exportedIds || [];
         document.getElementById('eventTheme').value = data.theme || "";
         reorderDatabaseIds();
         saveTheme(); saveToLocalStorage(); renderDatabase();
         
-        // 還原排序區狀態
         if (data.currentSort && data.currentSort.length > 0) {
           filteredNewsResult = data.currentSort.map(s => {
             let item = newsDatabase.find(db => db.title === s.title && db.media === s.media);
@@ -637,7 +675,7 @@ function importCSV(e) {
   reader.readAsText(file, "UTF-8");
 }
 
-// ================= 重要性排序工具邏輯 =================
+// ================= 重要性排序工具邏輯 (連動當前關鍵字篩選) =================
 function filterAndOpenSortModal() {
   const startId = parseInt(document.getElementById('startId').value);
   const endId = parseInt(document.getElementById('endId').value);
@@ -645,12 +683,15 @@ function filterAndOpenSortModal() {
   
   if (newsDatabase.length === 0) return alert("資料庫是空的喔！");
   
+  // 修正邏輯：區間內匯入只抓取 currentlyVisibleIds (也就是目前畫面上看得見的)
   filteredNewsResult = newsDatabase.filter(item => {
+    const inVisibleList = currentlyVisibleIds.includes(item.id);
     const matchStart = !isNaN(startId) ? item.id >= startId : true;
     const matchEnd = !isNaN(endId) ? item.id <= endId : true;
-    return matchStart && matchEnd;
+    return inVisibleList && matchStart && matchEnd;
   }).map(item => ({ ...item, stars: 0 }));
   
+  // 額外指定數字部分則不受篩選限制，依舊能強制加入
   if (specificInput) {
     const ids = specificInput.split(/[,，、]/).map(x => parseInt(x.trim())).filter(x => !isNaN(x));
     ids.forEach(sid => {
@@ -670,7 +711,7 @@ function filterAndOpenSortModal() {
   const MM = String(now.getMonth() + 1).padStart(2, '0');
   const DD = String(now.getDate()).padStart(2, '0');
   document.getElementById('lineReportDate').value = MM + DD;
-  // 修正為 24 小時制無任何字首
+  
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   document.getElementById('lineReportTime').value = `${hours}:${minutes}`;
@@ -729,12 +770,11 @@ function createSortableLiElement(item) {
   return li;
 }
 
-// 點擊星星切換 0 -> 1 -> 2 -> 0 顆星
 function toggleStars(e, container) {
   e.stopPropagation();
   const li = container.closest('li');
   let currentStars = parseInt(li.getAttribute('data-stars') || "0");
-  currentStars = (currentStars + 1) % 3; // 循環 0, 1, 2
+  currentStars = (currentStars + 1) % 3;
   li.setAttribute('data-stars', currentStars);
   
   const stars = container.querySelectorAll('.star');
@@ -773,47 +813,53 @@ function handleSortItemRightClick(e, titleKey, mediaKey) {
   } else if (action === '2') {
     if (confirm(`確定從總資料庫完全刪除嗎？`)) {
       newsDatabase = newsDatabase.filter(item => !(item.title === titleKey && item.media === mediaKey));
+      exportedIds = exportedIds.filter(x => x !== targetItem.id);
       reorderDatabaseIds(); saveToLocalStorage(); renderDatabase();
       e.target.closest('li').remove();
     }
   }
 }
 
-// 歷史紀錄移至下方按鈕旁，並加上 Hover 時間提示
+// 歷史紀錄區微調：只保留按鈕與 Hover 懸停提示
 function renderHistoryButtons() {
   const container = document.getElementById('historyButtonsContainer');
   container.innerHTML = "";
   const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
   const currentHistory = exportHistory.filter(h => h.theme === currentTheme);
   if (currentHistory.length === 0) {
-    container.innerHTML = `<span class="text-gray-400 text-[10px]">無紀錄</span>`;
+    container.innerHTML = `<span class="text-gray-400 text-[10px]">暫無紀錄</span>`;
     return;
   }
-  // 最多取最新 4 筆以節省空間
-  currentHistory.slice(0, 4).forEach((h, idx) => {
+  currentHistory.slice(0, 5).forEach((h, idx) => {
     const wrapper = document.createElement('div');
     wrapper.className = "has-tooltip inline-block";
     
-    // 建立 Hover 出現的白底框提示
     const tooltip = document.createElement('div');
     tooltip.className = "tooltip";
-    tooltip.innerText = `完整儲存時間：${h.timestamp}`;
+    tooltip.innerText = `儲存時間：${h.timestamp}`;
     
     const btn = document.createElement('button');
-    btn.className = "bg-gray-100 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 px-2 py-1 rounded text-[10px] text-gray-700 shadow-sm transition block max-w-[80px] truncate";
+    btn.className = "bg-gray-100 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 px-2.5 py-1 rounded text-[10px] text-gray-700 shadow-sm transition block max-w-[85px] truncate font-medium";
     btn.innerText = `⏱️ 紀錄 ${currentHistory.length - idx} (${h.count}則)`;
     
     btn.onclick = function() {
       const loadedData = h.sortedKeys.map(key => {
         let found = newsDatabase.find(item => item.title === key.title && item.media === key.media);
-        if (found) return { ...found, stars: key.stars || 0 };
+        if (found) {
+          // 載入歷史紀錄時，連動將其 ID 加入變紅名單
+          if (!exportedIds.includes(found.id)) exportedIds.push(found.id);
+          return { ...found, stars: key.stars || 0 };
+        }
         return null;
       }).filter(Boolean);
+      
       if (loadedData.length > 0) {
         renderSortableList(loadedData);
         if (h.reportDate) document.getElementById('lineReportDate').value = h.reportDate;
         if (h.reportTime) document.getElementById('lineReportTime').value = h.reportTime;
-        alert(`已載入紀錄 ${currentHistory.length - idx} 的排序與評等狀態！`);
+        saveToLocalStorage();
+        renderDatabase(); // 重新刷出紅色日期效果
+        alert(`已載入紀錄 ${currentHistory.length - idx} 的排序、星等，並連動標記 DATABASE 日期！`);
       } else {
         alert("原紀錄中的新聞均已由總庫刪除，無法還原。");
       }
@@ -840,9 +886,15 @@ function saveSortAndExport() {
     const mKey = li.getAttribute('data-media-key');
     const stars = parseInt(li.getAttribute('data-stars') || "0");
     let found = newsDatabase.find(item => item.title === tKey && item.media === mKey);
-    if (found) return { ...found, stars: stars };
+    if (found) {
+      // 被導出的資料，將其 ID 加進變紅名單
+      if (!exportedIds.includes(found.id)) exportedIds.push(found.id);
+      return { ...found, stars: stars };
+    }
     return null;
   }).filter(Boolean);
+  
+  if (finalSortedData.length === 0) return alert("排序清單內沒有資料可以匯出喔！");
   
   const sortedKeys = finalSortedData.map(item => ({ title: item.title, media: item.media, stars: item.stars }));
   const rDate = document.getElementById('lineReportDate').value.trim() || "0000";
@@ -861,6 +913,7 @@ function saveSortAndExport() {
   exportHistory.unshift(record);
   saveToLocalStorage();
   renderHistoryButtons();
+  renderDatabase(); // 立即重新渲染以顯現 DATABASE 日期變紅的效果
   generateTextOutput(finalSortedData, rDate, rTime);
 }
 
@@ -912,7 +965,7 @@ function generateTextOutput(dataList, rDate, rTime) {
   }
   
   navigator.clipboard.writeText(outputText).then(() => {
-    alert(` ✨  成果回報文字生成成功並已自動複製！\n評等星星也成功附加在標題後方囉！`);
+    alert(` ✨  成果回報文字生成成功並已自動複製！\nDATABASE 被導出過的日期也成功標記為紅色囉！`);
   }).catch(err => {
     alert("自動複製失敗，請手動複製內容。");
   });
