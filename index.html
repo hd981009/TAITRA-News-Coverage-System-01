@@ -73,7 +73,7 @@
 <div class="md:col-span-3 space-y-4">
 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
 <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
-<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序)</span></h3>
+<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序，各欄位按右鍵可快速修改)</span></h3>
 <div class="flex space-x-2 text-xs">
 <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
   📊  匯出 CSV
@@ -94,7 +94,7 @@
 <th class="p-2.5 w-24">媒體名稱</th>
 <th class="p-2.5 w-64">報導標題</th>
 <th class="p-2.5 w-48">連結/版位</th>
-<th class="p-2.5 w-16">記者</th>
+<th class="p-2.5 w-20">記者</th>
 <th class="p-2.5 w-40">
   <div class="flex items-center space-x-1">
     <span>關鍵字</span>
@@ -159,11 +159,11 @@
 <div class="flex flex-col overflow-hidden bg-white">
 <div class="bg-gray-200 border-b border-gray-300 flex text-[11px] text-gray-600 font-semibold py-1 px-2 select-none">
 <div class="w-8 text-center">拖曳</div>
-<div class="w-12 text-center">編號</div> <div class="w-14 text-center">評等</div>
+<div class="w-12 text-center">編號</div>
+<div class="w-14 text-center">評等</div>
 <div class="w-14">類型</div>
 <div class="w-24">媒體名稱</div>
-<div class="flex-1">報導標題 / 記者</div>
-<div class="w-16 text-center">連結</div> 
+<div class="w-20">記者</div> <div class="flex-1">報導標題</div> <div class="w-16 text-center">連結</div> 
 </div>
 <ul id="sortableList" class="divide-y divide-gray-200 min-h-[180px] max-h-[350px] overflow-y-auto"></ul>
 </div>
@@ -198,7 +198,7 @@
 <input type="date" id="newsDate" class="w-full p-1.5 border border-gray-300 rounded-md">
 </div>
 <div>
-<label class="block text-gray-400 mb-1">報導類型</label>
+<label class="block text-gray-400 mb-1">報導報導類型</label>
 <select id="newsType" class="w-full p-1.5 border border-gray-300 rounded-md">
 <option value="報紙">報紙</option>
 <option value="影音">影音</option>
@@ -222,7 +222,7 @@
 <div class="grid grid-cols-2 gap-2">
 <div>
 <label class="block text-gray-700 mb-1">記者名字</label>
-<input type="text" id="reporter" placeholder="陳大文（選填）" class="w-full p-1.5 border border-gray-300 rounded-md">
+<input type="text" id="reporter" placeholder="選填（無填寫則保持空白）" class="w-full p-1.5 border border-gray-300 rounded-md">
 </div>
 <div>
 <label class="block text-gray-700 mb-1">關鍵字</label>
@@ -329,14 +329,12 @@ function toggleCollapseModal() {
   }
 }
 
-// 關鍵字篩選框動態對齊按鈕（Fixed 定位精密計算位置）
 function toggleKeywordDropdown(e) {
   e.stopPropagation();
   const menu = document.getElementById('keywordDropdownContainer');
   if (menu.classList.contains('hidden')) {
     const btn = document.getElementById('kwFilterBtn');
     const rect = btn.getBoundingClientRect();
-    // 將選單定錨在按鈕下方
     menu.style.left = (rect.left - 150) + 'px';
     menu.style.top = (rect.bottom + window.scrollY + 5) + 'px';
     menu.classList.remove('hidden');
@@ -402,7 +400,7 @@ function importNews() {
     media: media || "未填",
     title: title,
     link: link || "未填",
-    reporter: reporter || "未填",
+    reporter: reporter || "", // 未填時直接維持空白字串
     keywords: keywords || ""
   };
   newsDatabase.push(newsItem);
@@ -455,7 +453,6 @@ function toggleKeywordFilter(cb) {
   renderDatabase();
 }
 
-// 核心綁定函數：動態找出目前所有歷史紀錄中含有哪些新聞
 function getExportedIdsFromHistory() {
   const exportedIds = new Set();
   const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
@@ -468,6 +465,47 @@ function getExportedIdsFromHistory() {
     });
   });
   return Array.from(exportedIds);
+}
+
+// 實作各欄位右鍵點擊修改核心邏輯
+function handleFieldRightClick(e, id, fieldName, fieldLabel) {
+  e.preventDefault(); e.stopPropagation();
+  const item = newsDatabase.find(x => x.id === id);
+  if (!item) return;
+  
+  const originalValue = item[fieldName] || "";
+  const newValue = prompt(`請修改【編號 ${id}】的「${fieldLabel}」：`, originalValue);
+  
+  if (newValue !== null) {
+    item[fieldName] = newValue.trim();
+    saveToLocalStorage();
+    renderDatabase();
+    
+    // 如果目前下方有開著排序框，同步刷新排序框內的資訊
+    const sortSection = document.getElementById('sortSection');
+    if (!sortSection.classList.contains('hidden')) {
+      const listItems = Array.from(document.getElementById('sortableList').children);
+      const currentSortData = listItems.map(li => {
+        const tKey = li.getAttribute('data-title-key');
+        const mKey = li.getAttribute('data-media-key');
+        const stars = parseInt(li.getAttribute('data-stars') || "0");
+        
+        // 如果改的是標題或媒體名稱，對照時需找原來的配對
+        let found;
+        if (fieldName === 'title' && tKey === originalValue && item.media === mKey) {
+          found = item;
+        } else if (fieldName === 'media' && mKey === originalValue && item.title === tKey) {
+          found = item;
+        } else {
+          found = newsDatabase.find(db => db.title === tKey && db.media === mKey);
+        }
+        
+        if (found) return { ...found, stars: stars };
+        return null;
+      }).filter(Boolean);
+      renderSortableList(currentSortData);
+    }
+  }
 }
 
 function renderDatabase() {
@@ -484,7 +522,7 @@ function renderDatabase() {
   }
   
   currentlyVisibleIds = displayData.map(item => item.id);
-  const activeExportedIds = getExportedIdsFromHistory(); // 動態抓取綁定歷史紀錄的變紅清單
+  const activeExportedIds = getExportedIdsFromHistory();
 
   displayData.forEach(item => {
     const tr = document.createElement('tr');
@@ -498,23 +536,23 @@ function renderDatabase() {
       linkDisplay = `<span class="block truncate" title="${item.link}">${item.link}</span>`;
     }
     
-    // 如果該 ID 存在於當前的歷史紀錄中，日期即變紅，否則黑字
     const dateColorClass = activeExportedIds.includes(item.id) ? "text-red-600 font-semibold" : "";
+    const reporterText = item.reporter || ""; // 確保未填時為完全空白不顯示「未填」
 
     tr.innerHTML = `
       <td class="p-2 text-center font-medium text-red-500 cursor-pointer bg-red-50/30 hover:bg-red-100 font-bold select-none"
           oncontextmenu="handleIdRightClick(event, ${item.id})" title="點擊右鍵可刪除此筆">
         ${item.id}
       </td>
-      <td class="p-2 truncate ${dateColorClass}">${item.date}</td>
+      <td class="p-2 truncate ${dateColorClass} cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'date', '收錄日期')">${item.date}</td>
       <td class="p-2 select-none" oncontextmenu="handleTypeRightClick(event, ${item.id})">
         <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
       </td>
-      <td class="p-2 font-medium truncate">${item.media}</td>
-      <td class="p-2 truncate font-medium text-gray-900" title="${item.title}">${item.title}</td>
-      <td class="p-2 truncate">${linkDisplay}</td>
-      <td class="p-2 truncate">${item.reporter}</td>
-      <td class="p-2 truncate text-gray-400" title="${item.keywords}">${item.keywords}</td>
+      <td class="p-2 font-medium truncate cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'media', '媒體名稱')">${item.media}</td>
+      <td class="p-2 truncate font-medium text-gray-900 cursor-pointer" title="${item.title}" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'title', '報導標題')">${item.title}</td>
+      <td class="p-2 truncate cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'link', '連結/版位')">${linkDisplay}</td>
+      <td class="p-2 truncate cursor-pointer font-medium" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'reporter', '記者')">${reporterText}</td>
+      <td class="p-2 truncate text-gray-400 cursor-pointer" title="${item.keywords}" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'keywords', '關鍵字')">${item.keywords}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -624,7 +662,10 @@ function importProject(e) {
     try {
       const data = JSON.parse(evt.target.result);
       if (data.database) {
-        newsDatabase = data.database;
+        newsDatabase = data.database.map(item => {
+          if (item.reporter === "未填") item.reporter = "";
+          return item;
+        });
         exportHistory = data.history || [];
         document.getElementById('eventTheme').value = data.theme || "";
         reorderDatabaseIds();
@@ -657,7 +698,7 @@ function exportCSV() {
   if (newsDatabase.length === 0) return alert("沒有資料可導出！");
   let csvContent = "\uFEFF編號,收錄日期,報導類型,媒體名稱,報導標題,報導網址或報紙版位,記者名字,關鍵字\n";
   newsDatabase.forEach(item => {
-    csvContent += `"${item.id}","${item.date}","${item.type}","${item.media}","${item.title}","${item.link}","${item.reporter}","${item.keywords}"\n`;
+    csvContent += `"${item.id}","${item.date}","${item.type}","${item.media}","${item.title}","${item.link}","${item.reporter || ''}","${item.keywords}"\n`;
   });
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
@@ -679,6 +720,10 @@ function importCSV(e) {
       const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
       const csvTitle = cols[4];
       if (!csvTitle || csvTitle === "報導標題" || csvTitle === "未填") continue;
+      
+      let rep = cols[6] || "";
+      if (rep === "未填") rep = "";
+
       newsDatabase.push({
         id: currentId++,
         date: cols[1] || "未填",
@@ -686,7 +731,7 @@ function importCSV(e) {
         media: cols[3] || "未填",
         title: csvTitle,
         link: cols[5] || "未填",
-        reporter: cols[6] || "未填",
+        reporter: rep,
         keywords: cols[7] || ""
       });
       loadedCount++;
@@ -770,6 +815,7 @@ function createSortableLiElement(item) {
     linkHtml = `<span class="text-gray-400 text-[10px] truncate block w-12 text-center" title="${item.link}">${item.link}</span>`;
   }
 
+  // 重新調整內部結構：將記者拆為獨立一欄，標題設定為 flex-1 且帶有 truncate 限制
   li.innerHTML = `
     <div class="flex items-center space-x-2 pointer-events-none flex-1 truncate">
       <span class="text-gray-300 font-bold w-8 text-center text-sm"> ☰ </span>
@@ -782,9 +828,8 @@ function createSortableLiElement(item) {
         <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
       </div>
       <span class="font-bold text-gray-900 w-24 truncate">${item.media}</span>
-      <span class="font-medium truncate text-gray-800 flex-1" title="${item.title}">
-        ${item.title} <span class="text-gray-400 font-normal text-[11px]">（記者：${item.reporter}）</span>
-      </span>
+      <span class="text-gray-600 w-20 truncate font-medium">${item.reporter || ''}</span>
+      <span class="font-medium truncate text-gray-800 flex-1" title="${item.title}">${item.title}</span>
     </div>
     <div class="w-16 text-center z-10">${linkHtml}</div>
   `;
@@ -840,7 +885,6 @@ function handleSortItemRightClick(e, titleKey, mediaKey) {
   }
 }
 
-// 歷史紀錄區：改為由左至右、越新的紀錄越靠右邊 (藉由陣列方向和渲染順序調整)
 function renderHistoryButtons() {
   const container = document.getElementById('historyButtonsContainer');
   container.innerHTML = "";
@@ -851,7 +895,6 @@ function renderHistoryButtons() {
     return;
   }
   
-  // 倒序陣列渲染：讓最老舊的排左邊、最創新的推到最右邊（由左至右增加）
   const displayHistory = [...currentHistory].reverse();
 
   displayHistory.forEach((h, idx) => {
@@ -887,11 +930,10 @@ function renderHistoryButtons() {
     btn.oncontextmenu = function(e) {
       e.preventDefault();
       if (confirm(`確定要刪除這條歷史排序紀錄嗎？`)) {
-        // 從原始大陣列中過濾剔除
         exportHistory = exportHistory.filter(item => item.timestamp !== h.timestamp);
         saveToLocalStorage(); 
         renderHistoryButtons();
-        renderDatabase(); // 刪除紀錄後，立刻動態重刷 DATABASE 日期，沒紀錄綁定就自動變回黑色
+        renderDatabase();
       }
     };
     
@@ -929,11 +971,10 @@ function saveSortAndExport() {
     reportTime: rTime
   };
   
-  // 新紀錄塞入陣列頂部
   exportHistory.unshift(record);
   saveToLocalStorage();
   renderHistoryButtons();
-  renderDatabase(); // 讓有被成果包含的新聞在 DATABASE 自動轉為紅字
+  renderDatabase();
   generateTextOutput(finalSortedData, rDate, rTime);
 }
 
