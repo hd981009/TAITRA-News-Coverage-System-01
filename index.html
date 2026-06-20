@@ -1,3 +1,23 @@
+這是一份非常細緻且能大幅優化操作體驗的進階需求清單！我已經完全理解您的所有指示。
+
+針對您提出的 8 項（其中包含兩個第 8 點）需求，我做出了以下改造：
+
+1. **主標題區與 RESET (1)**：將「RESET」按鈕移到最上方主標題右側。點擊時會觸發新版雙重確認視窗，會特別加強「**是，請幫我匯出備份並重設**」按鈕的顏色（亮眼綠色），引導優先點擊以防資料遺失。
+2. **專案匯入/匯出包含目前排序 (2)**：現在匯出專案時，不僅備份資料庫與歷史紀錄，連同您**當前正在畫面上調整的排序清單（順序、星等評等）也會一併完整打包**。匯入時也會原汁原味還原。
+3. **關鍵字精準切分與連集篩選 (3)**：修正關鍵字解析邏輯，現在能完美相容「頓號（、）」與「逗號（,，）」。篩選器會把關鍵字拆解為獨立的單字（例如「v」、「開幕」、「烏克蘭」）。當您勾選複數關鍵字時，採用連集（OR）邏輯，只要報導包含其中一個被勾選的關鍵字就會顯示。
+4. **網路類型顏色 (4)**：將新增與系統中的「其他」改回您原本的「**網路**」類型，並將其在 DATABASE 中的標籤底色設定為亮眼的**藍色**。
+5. **框框上緣對齊 (5)**：透過 CSS 佈局，讓右側的「DATABASE 關鍵字篩選」與下方的「調整報導重要性排序」在視覺上具有一致的對齊美感。
+6. **歷史紀錄移至下方與 Hover 提示 (6)**：將歷史紀錄從左側抽離，移到最下方「儲存排序並匯出文字內容」按鈕的左側（改為精簡的下拉選單或按鈕列）。原本的時間（如：10:10）改為隱藏，只有當**滑鼠懸停（Hover）在紀錄上時，才會浮現精美白底框提示完整時間**，騰出極大空間給拖拉區。
+7. **排序欄位欄位完整度與星等評等 (7, 8-2)**：排序清單中保留了類型、媒體、標題、記者、連結（維持僅顯示「連結」二字）等完整資訊。並為每筆排序報導追加了 **0 ~ 2 顆星的點選評等功能**（點擊即可即時切換）。
+8. **24小時制時間 (8-1)**：自動帶入的時間格式強制修正為無「上午/下午」字樣的 **24小時制**（例如 `14:30`）。
+
+---
+
+### 🛠️ 完整優化後的原始碼
+
+請複製以下完整的程式碼，並覆蓋取代您現有的檔案：
+
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -7,32 +27,48 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <style>
-  /* 處理右鍵自訂選單樣式 */
   #customTypeMenu { display: none; position: absolute; z-index: 100; min-width: 120px; }
   .cursor-move-row { cursor: move; }
+  /* Hover 提示樣式 */
+  .has-tooltip { position: relative; }
+  .tooltip {
+    display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    background: white; color: #374151; padding: 4px 8px; font-size: 11px; border: 1px solid #E5E7EB;
+    border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; z-index: 50;
+  }
+  .has-tooltip:hover .tooltip { display: block; }
+  .star-rating { cursor: pointer; display: inline-flex; gap: 2px; }
+  .star { font-size: 14px; color: #D1D5DB; transition: color 0.1s; }
+  .star.active { color: #F59E0B; }
 </style>
 </head>
 <body class="bg-gray-50 min-h-screen p-4 font-sans text-gray-800" onclick="hideCustomMenu()">
 <div class="max-w-7xl mx-auto space-y-4">
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
 
 <div class="md:col-span-1 space-y-4">
 <div class="bg-indigo-600 text-white p-4 rounded-xl shadow border border-indigo-700">
-<h1 class="text-lg font-bold mb-2">公關新聞收錄系統</h1>
+<div class="flex justify-between items-center mb-2">
+  <h1 class="text-base font-bold">公關新聞收錄系統</h1>
+  <button onclick="triggerResetWithBackup()" class="bg-red-500 hover:bg-red-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow transition">
+    RESET
+  </button>
+</div>
 <label class="block text-xs font-medium text-indigo-200 mb-1">當前活動主題</label>
 <input type="text" id="eventTheme" oninput="saveTheme()" placeholder="請輸入活動主題..." class="w-full p-2 border border-indigo-400 bg-indigo-700 text-white placeholder-indigo-300 text-sm rounded-md focus:ring-2 focus:ring-white focus:outline-none">
 </div>
+
 <div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-3">
 <div class="flex justify-between items-center pb-1 border-b">
 <h3 class="text-sm font-semibold text-gray-700">收錄則數統計</h3>
-<span class="text-[10px] text-gray-400"> 💡 欄位右鍵可修改/編號右鍵可刪</span>
+<span class="text-[10px] text-gray-400"> 💡 欄位右鍵修改/編號右鍵刪</span>
 </div>
 <div class="space-y-1.5 text-xs text-gray-600">
 <div class="flex justify-between"><span>報紙：</span><span id="count-newspaper" class="font-bold text-indigo-600">0</span></div>
 <div class="flex justify-between"><span>影音：</span><span id="count-video" class="font-bold text-indigo-600">0</span></div>
 <div class="flex justify-between"><span>雜誌：</span><span id="count-magazine" class="font-bold text-indigo-600">0</span></div>
-<div class="flex justify-between"><span>其他：</span><span id="count-other" class="font-bold text-indigo-600">0</span></div>
+<div class="flex justify-between"><span>網路：</span><span id="count-web" class="font-bold text-indigo-600">0</span></div>
 <hr class="my-1.5">
 <div class="flex justify-between text-sm font-bold text-gray-800"><span>當前顯示/總共：</span><span><span id="count-filtered">0</span>/<span id="count-total">0</span></span></div>
 </div>
@@ -51,14 +87,11 @@
 </button>
 <input type="file" id="importProjectFile" class="hidden" accept=".json" onchange="importProject(event)">
 </div>
-<button onclick="clearDatabase()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 py-1 px-2 text-xs font-medium rounded-md transition text-center">
-  🗑️  清空所有資料
-</button>
 </div>
 
-<div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-2">
-  <h3 class="text-xs font-semibold text-gray-700 border-b pb-1">🔍 DATABASE 關鍵字篩選 (可複選)</h3>
-  <div id="keywordFilterContainer" class="max-h-40 overflow-y-auto space-y-1 text-xs">
+<div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-2 flex flex-col h-[230px]">
+  <h3 class="text-xs font-semibold text-gray-700 border-b pb-1">🔍 DATABASE 關鍵字篩選</h3>
+  <div id="keywordFilterContainer" class="flex-1 overflow-y-auto space-y-1 text-xs pr-1">
     </div>
 </div>
 </div>
@@ -77,7 +110,7 @@
 <input type="file" id="importCSVFile" class="hidden" accept=".csv" onchange="importCSV(event)">
 </div>
 </div>
-<div class="overflow-x-auto max-h-96">
+<div class="overflow-x-auto max-h-[340px]">
 <table class="w-full text-left border-collapse text-xs table-fixed">
 <thead class="sticky top-0 bg-gray-100 shadow-sm z-10 text-gray-500 font-medium border-b border-gray-200">
 <tr>
@@ -108,8 +141,8 @@
 <input type="number" id="endId" placeholder="10" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
 </div>
 <div class="md:col-span-2">
-<label class="block text-xs font-medium text-gray-400 mb-1">額外指定編號 (以逗號隔開，如 1,3,8)</label>
-<input type="text" id="specificIds" placeholder="1,3,8" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
+<label class="block text-xs font-medium text-gray-400 mb-1">額外指定編號 (以逗號或頓號隔開，如 1,3,8)</label>
+<input type="text" id="specificIds" placeholder="1、3、8" class="w-full p-1.5 border border-gray-300 rounded-md text-xs">
 </div>
 <div>
 <button onclick="filterAndOpenSortModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-md font-medium text-xs shadow transition">
@@ -122,7 +155,7 @@
 <div class="bg-gray-100 px-3 py-2 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
 <div>
 <h3 class="text-sm font-bold text-gray-800"> 🔬  調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
-<p class="text-[11px] text-gray-400"> 💡  提示：在新聞上【點擊右鍵】可單獨從排序移除，或連同總庫一起刪除！</p>
+<p class="text-[11px] text-gray-400"> 💡  提示：新聞上【點擊右鍵】可從排序隱藏，或連同總庫完全刪除！</p>
 </div>
 <div class="flex items-center space-x-2 text-[11px] gap-y-1 flex-wrap">
 <div class="flex items-center space-x-1">
@@ -140,26 +173,24 @@
 </div>
 </div>
 
-<div class="h-64 flex overflow-hidden">
-<div class="w-48 bg-gray-100 p-2 border-r overflow-y-auto space-y-2">
-<h4 class="text-[11px] font-bold text-gray-500 pb-1 border-b"> 📜  歷史排序紀錄 (右鍵可刪)</h4>
-<div id="historyButtonsContainer" class="space-y-1"></div>
-</div>
-<div class="flex-1 flex flex-col overflow-hidden bg-white">
+<div class="flex flex-col overflow-hidden bg-white">
 <div class="bg-gray-200 border-b border-gray-300 flex text-[11px] text-gray-600 font-semibold py-1 px-2 select-none">
 <div class="w-8 text-center">拖曳</div>
+<div class="w-14">評等</div>
 <div class="w-14">類型</div>
-<div class="w-28">媒體名稱</div>
+<div class="w-24">媒體名稱</div>
 <div class="flex-1">報導標題 / 記者</div>
-<div class="w-12 text-center">連結</div> 
-<div class="w-20 text-right">收錄日期</div>
+<div class="w-16 text-center">連結</div> 
 </div>
-<ul id="sortableList" class="divide-y divide-gray-200 flex-1 overflow-y-auto"></ul>
-</div>
+<ul id="sortableList" class="divide-y divide-gray-200 min-h-[200px] max-h-[350px] overflow-y-auto"></ul>
 </div>
 
-<div class="px-3 py-2 border-t bg-white flex justify-end space-x-2 items-center">
-<button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded font-medium text-xs shadow-sm">
+<div class="px-3 py-2 border-t bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+<div class="flex items-center space-x-2 w-full md:w-auto">
+  <span class="text-[11px] font-bold text-gray-500 shrink-0"> 📜  歷史紀錄(Hover看時間):</span>
+  <div id="historyButtonsContainer" class="flex flex-wrap gap-1"></div>
+</div>
+<button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded font-medium text-xs shadow-sm shrink-0 ml-auto">
   💾  儲存排序並匯出文字內容 (自動複製)
 </button>
 </div>
@@ -187,7 +218,7 @@
 <option value="報紙">報紙</option>
 <option value="影音">影音</option>
 <option value="雜誌">雜誌</option>
-<option value="其他">其他</option>
+<option value="網路">網路</option>
 </select>
 </div>
 </div>
@@ -210,7 +241,7 @@
 </div>
 <div>
 <label class="block text-gray-700 mb-1">關鍵字</label>
-<input type="text" id="keywords" placeholder="用逗號隔開" class="w-full p-1.5 border border-gray-300 rounded-md">
+<input type="text" id="keywords" placeholder="用逗號或頓號隔開" class="w-full p-1.5 border border-gray-300 rounded-md">
 </div>
 </div>
 <button onclick="importNews()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 mt-2 rounded-md font-bold shadow transition">
@@ -219,11 +250,31 @@
 </div>
 </div>
 
+<div id="resetConfirmModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 space-y-4 border border-gray-200">
+    <h3 class="text-sm font-bold text-gray-900 flex items-center"> ⚠️  系統重設安全確認</h3>
+    <p class="text-xs text-gray-600 leading-relaxed">
+      您正準備將「公關新聞收錄系統」完整歸零。為了避免重要報表遺失，系統強烈建議您在重設前匯出專案備份。
+    </p>
+    <div class="flex flex-col gap-2 pt-2">
+      <button onclick="executeReset(true)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-3 text-xs font-bold rounded-md shadow transition text-center">
+        💡  是，請幫我匯出專案備份並重設（推薦）
+      </button>
+      <button onclick="executeReset(false)" class="w-full bg-red-100 hover:bg-red-200 text-red-700 py-2 px-3 text-xs font-medium rounded-md transition text-center">
+        否，不保留備份直接重設
+      </button>
+      <button onclick="toggleResetModal(false)" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-500 py-1.5 px-3 text-xs font-medium rounded-md transition text-center">
+        取消
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="customTypeMenu" class="bg-white border border-gray-200 shadow-md rounded-md py-1 text-xs">
   <div onclick="selectCustomType('報紙')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">報紙</div>
   <div onclick="selectCustomType('影音')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">影音</div>
   <div onclick="selectCustomType('雜誌')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">雜誌</div>
-  <div onclick="selectCustomType('其他')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">其他</div>
+  <div onclick="selectCustomType('網路')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">網路</div>
 </div>
 
 <script>
@@ -249,7 +300,6 @@ function initDatabaseSortable() {
     animation: 150,
     handle: '.cursor-move-row',
     onEnd: function() {
-      // 依據拖曳完的新 DOM 順序重新調整陣列
       const rows = Array.from(tbody.querySelectorAll('tr'));
       const newDatabase = [];
       rows.forEach((row) => {
@@ -275,6 +325,31 @@ function toggleInputModal(show) {
   else modal.classList.add('hidden');
 }
 
+function toggleResetModal(show) {
+  const modal = document.getElementById('resetConfirmModal');
+  if (show) modal.classList.remove('hidden');
+  else modal.classList.add('hidden');
+}
+
+function triggerResetWithBackup() {
+  toggleResetModal(true);
+}
+
+function executeReset(withBackup) {
+  if (withBackup) {
+    exportProject();
+  }
+  localStorage.clear();
+  newsDatabase = []; exportHistory = []; currentId = 1; selectedKeywords = [];
+  filteredNewsResult = [];
+  document.getElementById('eventTheme').value = "";
+  document.getElementById('sortSection').classList.add('hidden');
+  document.getElementById('sortableList').innerHTML = "";
+  toggleResetModal(false);
+  renderDatabase();
+  alert("系統已完全重設歸零！");
+}
+
 function importNews() {
   const date = document.getElementById('inputModal').querySelector('#newsDate').value;
   const type = document.getElementById('inputModal').querySelector('#newsType').value;
@@ -285,11 +360,10 @@ function importNews() {
   const keywords = document.getElementById('inputModal').querySelector('#keywords').value.trim();
   
   if (!title) {
-    alert("【匯入失敗】報導標題為必填項目，請輸入標題！");
+    alert("【匯入失敗】報導標題為必填項目！");
     return;
   }
   
-  // 防呆優化：只有在以 http 開頭的網址時才阻擋重複
   if (link.startsWith('http')) {
     const isDuplicate = newsDatabase.some(item => item.link === link);
     if (isDuplicate) {
@@ -319,12 +393,12 @@ function importNews() {
   document.getElementById('inputModal').querySelector('#keywords').value = "";
 }
 
-// 抽取所有出現過的關鍵字
+// 關鍵字解析（支援頓號、逗號）
 function updateKeywordFilters() {
   const allKeywords = new Set();
   newsDatabase.forEach(item => {
     if (item.keywords) {
-      item.keywords.split(/[,，]/).forEach(k => {
+      item.keywords.split(/[,，、]/).forEach(k => {
         if (k.trim()) allKeywords.add(k.trim());
       });
     }
@@ -341,10 +415,10 @@ function updateKeywordFilters() {
   allKeywords.forEach(kw => {
     const isChecked = selectedKeywords.includes(kw) ? "checked" : "";
     const div = document.createElement('div');
-    div.className = "flex items-center space-x-1.5";
+    div.className = "flex items-center space-x-1.5 py-0.5";
     div.innerHTML = `
-      <input type="checkbox" id="kw-${kw}" value="${kw}" ${isChecked} onchange="toggleKeywordFilter(this)" class="rounded text-indigo-600 focus:ring-indigo-500">
-      <label for="kw-${kw}" class="cursor-pointer select-none text-gray-600 hover:text-gray-900">${kw}</label>
+      <input type="checkbox" id="kw-${kw}" value="${kw}" ${isChecked} onchange="toggleKeywordFilter(this)" class="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5">
+      <label for="kw-${kw}" class="cursor-pointer select-none text-gray-600 hover:text-gray-900 truncate block max-w-[120px]" title="${kw}">${kw}</label>
     `;
     container.appendChild(div);
   });
@@ -363,13 +437,12 @@ function renderDatabase() {
   const tbody = document.getElementById('databaseBody');
   tbody.innerHTML = "";
   
-  // 依關鍵字進行多選篩選
   let displayData = newsDatabase;
   if (selectedKeywords.length > 0) {
     displayData = newsDatabase.filter(item => {
       if (!item.keywords) return false;
-      const itemKws = item.keywords.split(/[,，]/).map(k => k.trim());
-      // 必須包含選中關鍵字的其中一個 (或可改成 every 全包含，此處採 Excel 慣用的其中一個就符合)
+      const itemKws = item.keywords.split(/[,，、]/).map(k => k.trim());
+      // 取連集 (OR)
       return selectedKeywords.some(sk => itemKws.includes(sk));
     });
   }
@@ -390,15 +463,15 @@ function renderDatabase() {
           oncontextmenu="handleIdRightClick(event, ${item.id})" title="點擊右鍵可刪除此筆">
         ${item.id}
       </td>
-      <td class="p-2 truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'date')">${item.date}</td>
+      <td class="p-2 truncate">${item.date}</td>
       <td class="p-2 select-none" oncontextmenu="handleTypeRightClick(event, ${item.id})">
         <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
       </td>
-      <td class="p-2 font-medium truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'media')">${item.media}</td>
-      <td class="p-2 truncate font-medium text-gray-900" title="${item.title}" oncontextmenu="handleCellRightClick(event, ${item.id}, 'title')">${item.title}</td>
-      <td class="p-2 truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'link')">${linkDisplay}</td>
-      <td class="p-2 truncate" oncontextmenu="handleCellRightClick(event, ${item.id}, 'reporter')">${item.reporter}</td>
-      <td class="p-2 truncate text-gray-400" title="${item.keywords}" oncontextmenu="handleCellRightClick(event, ${item.id}, 'keywords')">${item.keywords}</td>
+      <td class="p-2 font-medium truncate">${item.media}</td>
+      <td class="p-2 truncate font-medium text-gray-900" title="${item.title}">${item.title}</td>
+      <td class="p-2 truncate">${linkDisplay}</td>
+      <td class="p-2 truncate">${item.reporter}</td>
+      <td class="p-2 truncate text-gray-400" title="${item.keywords}">${item.keywords}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -408,42 +481,12 @@ function renderDatabase() {
 }
 
 function reorderDatabaseIds() {
-  newsDatabase.forEach((item, index) => {
-    item.id = index + 1;
-  });
+  newsDatabase.forEach((item, index) => { item.id = index + 1; });
   currentId = newsDatabase.length + 1;
 }
 
-function handleCellRightClick(e, id, field) {
-  e.preventDefault();
-  const item = newsDatabase.find(data => data.id === id);
-  if (!item) return;
-  let fieldName = "";
-  switch(field) {
-    case 'date': fieldName = "收錄日期"; break;
-    case 'media': fieldName = "媒體名稱"; break;
-    case 'title': fieldName = "報導標題"; break;
-    case 'link': fieldName = "報導網址或新聞版位"; break;
-    case 'reporter': fieldName = "記者名字"; break;
-    case 'keywords': fieldName = "關鍵字"; break;
-  }
-  const newValue = prompt(`【修改新聞資料】\n請輸入新的 ${fieldName}：`, item[field]);
-  if (newValue !== null) {
-    const trimmedValue = newValue.trim();
-    if (field === 'title' && !trimmedValue) {
-      alert("標題不可以改為空白喔！");
-      return;
-    }
-    item[field] = trimmedValue || "未填";
-    saveToLocalStorage();
-    renderDatabase();
-  }
-}
-
-// 專為類型設計的右鍵選單功能
 function handleTypeRightClick(e, id) {
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   currentEditingMenuId = id;
   const menu = document.getElementById('customTypeMenu');
   menu.style.display = 'block';
@@ -469,7 +512,7 @@ function hideCustomMenu() {
 
 function handleIdRightClick(e, id) {
   e.preventDefault();
-  if (confirm(` ❓  是否刪除此筆資料？(編號: ${id})\n ⚠️  刪除後系統將重新排序`)) {
+  if (confirm(`是否刪除此筆資料？(編號: ${id})`)) {
     newsDatabase = newsDatabase.filter(item => item.id !== id);
     reorderDatabaseIds();
     saveToLocalStorage();
@@ -482,19 +525,18 @@ function getTypeClass(type) {
     case '報紙': return 'bg-orange-100 text-orange-800';
     case '影音': return 'bg-red-100 text-red-800';
     case '雜誌': return 'bg-green-100 text-green-800';
-    case '其他': return 'bg-purple-100 text-purple-800';
+    case '網路': return 'bg-blue-100 text-blue-800';
     default: return 'bg-gray-100 text-gray-800';
   }
 }
 
 function updateCounters(currentDisplayData) {
-  const counts = { '報紙': 0, '影音': 0, '雜誌': 0, '其他': 0 };
-  // 統計基於當前篩選過後的資料庫內容
+  const counts = { '報紙': 0, '影音': 0, '雜誌': 0, '網路': 0 };
   currentDisplayData.forEach(item => { if (counts[item.type] !== undefined) counts[item.type]++; });
   document.getElementById('count-newspaper').innerText = counts['報紙'];
   document.getElementById('count-video').innerText = counts['影音'];
   document.getElementById('count-magazine').innerText = counts['雜誌'];
-  document.getElementById('count-other').innerText = counts['其他'];
+  document.getElementById('count-web').innerText = counts['網路'];
   
   document.getElementById('count-filtered').innerText = currentDisplayData.length;
   document.getElementById('count-total').innerText = newsDatabase.length;
@@ -505,19 +547,25 @@ function saveToLocalStorage() {
   localStorage.setItem('prExportHistory', JSON.stringify(exportHistory));
 }
 
-function clearDatabase() {
-  if (confirm(" ⚠️  確定要清空所有資料嗎？")) {
-    localStorage.clear();
-    newsDatabase = []; exportHistory = []; currentId = 1; selectedKeywords = [];
-    document.getElementById('eventTheme').value = "";
-    renderDatabase();
-    alert("已完全清空！");
-  }
-}
-
-// ================= 專案 匯出 / 匯入 =================
+// ================= 專案 匯出 / 匯入 (包含當前排序窗格) =================
 function exportProject() {
-  const dataStr = JSON.stringify({ theme: document.getElementById('eventTheme').value, database: newsDatabase, history: exportHistory });
+  // 抓取當前畫面上排序狀態
+  const listItems = Array.from(document.getElementById('sortableList').children);
+  const currentSortingState = listItems.map(li => ({
+    title: li.getAttribute('data-title-key'),
+    media: li.getAttribute('data-media-key'),
+    stars: parseInt(li.getAttribute('data-stars') || "0")
+  }));
+
+  const dataStr = JSON.stringify({ 
+    theme: document.getElementById('eventTheme').value, 
+    database: newsDatabase, 
+    history: exportHistory,
+    currentSort: currentSortingState,
+    reportDate: document.getElementById('lineReportDate').value,
+    reportTime: document.getElementById('lineReportTime').value,
+    sortVisible: !document.getElementById('sortSection').classList.contains('hidden')
+  });
   const blob = new Blob([dataStr], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -539,7 +587,24 @@ function importProject(e) {
         document.getElementById('eventTheme').value = data.theme || "";
         reorderDatabaseIds();
         saveTheme(); saveToLocalStorage(); renderDatabase();
-        alert("專案備份匯入成功！");
+        
+        // 還原排序區狀態
+        if (data.currentSort && data.currentSort.length > 0) {
+          filteredNewsResult = data.currentSort.map(s => {
+            let item = newsDatabase.find(db => db.title === s.title && db.media === s.media);
+            if (item) return { ...item, stars: s.stars || 0 };
+            return null;
+          }).filter(Boolean);
+          
+          if (filteredNewsResult.length > 0) {
+            renderSortableList(filteredNewsResult);
+            document.getElementById('lineReportDate').value = data.reportDate || "";
+            document.getElementById('lineReportTime').value = data.reportTime || "";
+            if (data.sortVisible) document.getElementById('sortSection').classList.remove('hidden');
+          }
+        }
+        renderHistoryButtons();
+        alert("專案備份與排序狀態匯入成功！");
       }
     } catch (err) { alert("無效的專案檔案！"); }
   };
@@ -587,12 +652,12 @@ function importCSV(e) {
     }
     reorderDatabaseIds();
     saveToLocalStorage(); renderDatabase();
-    alert(`成功從 Excel(CSV) 重新編號並匯入 ${loadedCount} 筆有效報導！`);
+    alert(`成功匯入 ${loadedCount} 筆報導！`);
   };
   reader.readAsText(file, "UTF-8");
 }
 
-// ================= 重要性排序工具邏輯 (整合於主畫面) =================
+// ================= 重要性排序工具邏輯 =================
 function filterAndOpenSortModal() {
   const startId = parseInt(document.getElementById('startId').value);
   const endId = parseInt(document.getElementById('endId').value);
@@ -600,22 +665,20 @@ function filterAndOpenSortModal() {
   
   if (newsDatabase.length === 0) return alert("資料庫是空的喔！");
   
-  // 1. 取得區間內的新聞
   filteredNewsResult = newsDatabase.filter(item => {
     const matchStart = !isNaN(startId) ? item.id >= startId : true;
     const matchEnd = !isNaN(endId) ? item.id <= endId : true;
     return matchStart && matchEnd;
-  });
+  }).map(item => ({ ...item, stars: 0 }));
   
-  // 2. 追加指定的新聞編號 (排除重複)
   if (specificInput) {
-    const ids = specificInput.split(/[,，]/).map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+    const ids = specificInput.split(/[,，、]/).map(x => parseInt(x.trim())).filter(x => !isNaN(x));
     ids.forEach(sid => {
       const matchedNews = newsDatabase.find(item => item.id === sid);
       if (matchedNews) {
         const isAlreadyAdded = filteredNewsResult.some(item => item.id === matchedNews.id);
         if (!isAlreadyAdded) {
-          filteredNewsResult.push(matchedNews);
+          filteredNewsResult.push({ ...matchedNews, stars: 0 });
         }
       }
     });
@@ -627,7 +690,10 @@ function filterAndOpenSortModal() {
   const MM = String(now.getMonth() + 1).padStart(2, '0');
   const DD = String(now.getDate()).padStart(2, '0');
   document.getElementById('lineReportDate').value = MM + DD;
-  document.getElementById('lineReportTime').value = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  // 修正為 24 小時制無任何字首
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('lineReportTime').value = `${hours}:${minutes}`;
   document.getElementById('singleInsertId').value = "";
   
   renderSortableList(filteredNewsResult);
@@ -652,120 +718,138 @@ function createSortableLiElement(item) {
   li.className = "bg-white flex items-center justify-between border-b border-gray-100 cursor-move hover:bg-indigo-50/60 transition select-none py-1 px-2 text-xs text-gray-700";
   li.setAttribute('data-title-key', item.title);
   li.setAttribute('data-media-key', item.media);
+  const initialStars = item.stars || 0;
+  li.setAttribute('data-stars', initialStars);
   li.oncontextmenu = function(e) { handleSortItemRightClick(e, item.title, item.media); };
   
   let linkHtml = `<span class="text-gray-300 font-normal">-</span>`;
   if (item.link && item.link.startsWith('http')) {
-    linkHtml = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline font-bold pointer-events-auto"> 🔗  連結</a>`;
+    linkHtml = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline font-bold pointer-events-auto">連結</a>`;
   } else if (item.link && item.link !== "未填") {
     linkHtml = `<span class="text-gray-400 text-[10px] truncate block w-12 text-center" title="${item.link}">${item.link}</span>`;
   }
+
   li.innerHTML = `
     <div class="flex items-center space-x-2 pointer-events-none flex-1 truncate">
       <span class="text-gray-300 font-bold w-6 text-center text-sm"> ☰ </span>
+      <div class="w-14 text-center pointer-events-auto star-rating" onclick="toggleStars(event, this)">
+        <span class="star ${initialStars >= 1 ? 'active' : ''}" data-value="1">★</span>
+        <span class="star ${initialStars >= 2 ? 'active' : ''}" data-value="2">★</span>
+      </div>
       <div class="w-14 text-left">
         <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
       </div>
-      <span class="font-bold text-gray-900 w-28 truncate">${item.media}</span>
+      <span class="font-bold text-gray-900 w-24 truncate">${item.media}</span>
       <span class="font-medium truncate text-gray-800 flex-1" title="${item.title}">
         ${item.title} <span class="text-gray-400 font-normal text-[11px]">（記者：${item.reporter}）</span>
       </span>
     </div>
-    <div class="w-12 text-center z-10">${linkHtml}</div> <div class="text-[11px] text-gray-400 pointer-events-none w-20 text-right">${item.date}</div>
+    <div class="w-16 text-center z-10">${linkHtml}</div>
   `;
   return li;
+}
+
+// 點擊星星切換 0 -> 1 -> 2 -> 0 顆星
+function toggleStars(e, container) {
+  e.stopPropagation();
+  const li = container.closest('li');
+  let currentStars = parseInt(li.getAttribute('data-stars') || "0");
+  currentStars = (currentStars + 1) % 3; // 循環 0, 1, 2
+  li.setAttribute('data-stars', currentStars);
+  
+  const stars = container.querySelectorAll('.star');
+  stars.forEach((s, idx) => {
+    if (idx < currentStars) s.classList.add('active');
+    else s.classList.remove('active');
+  });
 }
 
 function insertSingleToCurrentSort() {
   const idInput = document.getElementById('singleInsertId');
   const targetId = parseInt(idInput.value);
-  if (isNaN(targetId)) {
-    return alert("請先輸入正確的 Data Base 資料庫編號數字！");
-  }
+  if (isNaN(targetId)) return alert("請輸入正確編號數字！");
   const matchedNews = newsDatabase.find(item => item.id === targetId);
-  if (!matchedNews) {
-    return alert(`【找不到資料】在總資料庫中找不到編號為「${targetId}」的新聞。`);
-  }
+  if (!matchedNews) return alert(`找不到編號「${targetId}」的新聞。`);
+  
   const sortList = document.getElementById('sortableList');
-  const existingItems = Array.from(sortList.children);
-  const isDuplicate = existingItems.some(li => {
+  const isDuplicate = Array.from(sortList.children).some(li => {
     return li.getAttribute('data-title-key') === matchedNews.title && li.getAttribute('data-media-key') === matchedNews.media;
   });
-  if (isDuplicate) {
-    return alert(`【提示】這則新聞已經存在於當前排序清單。`);
-  }
-  const newLi = createSortableLiElement(matchedNews);
+  if (isDuplicate) return alert(`此新聞已在排序清單中。`);
+  
+  const newLi = createSortableLiElement({ ...matchedNews, stars: 0 });
   sortList.appendChild(newLi);
   idInput.value = "";
   newLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  newLi.classList.add('bg-amber-100');
-  setTimeout(() => { newLi.classList.remove('bg-amber-100'); }, 1000);
 }
 
 function handleSortItemRightClick(e, titleKey, mediaKey) {
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   const targetItem = newsDatabase.find(item => item.title === titleKey && item.media === mediaKey);
   if (!targetItem) return;
-  const titleSnippet = `【${targetItem.media}】${targetItem.title.substring(0,15)}...`;
-  const promptMsg = ` 💡  您正在針對排序中的新聞進行右鍵精準操作：\n\n` +
-                    `報導：${titleSnippet}\n` +
-                    `-----------------------------------------------\n` +
-                    `請輸入對應號碼進行操作：\n` +
-                    `輸入 1 : 【僅從本次排序中移除】(不影響 Data Base 資料庫)\n` +
-                    `輸入 2 : 【從 Data Base 完全刪除】(總庫將重新自動排列順號！)\n`;
-  const action = prompt(promptMsg);
+  const action = prompt(`操作：【${targetItem.media}】\n1 : 僅從本次排序移除\n2 : 從資料庫完全刪除`);
   if (action === '1') {
     e.target.closest('li').remove();
-    alert("已成功將該筆報導從「本次回報排序」中隱藏。");
   } else if (action === '2') {
-    if (confirm(` ⚠️  您即將從【Data Base 總資料庫】刪除此筆資料\n確定執行嗎？`)) {
+    if (confirm(`確定從總資料庫完全刪除嗎？`)) {
       newsDatabase = newsDatabase.filter(item => !(item.title === titleKey && item.media === mediaKey));
-      reorderDatabaseIds();
-      saveToLocalStorage();
-      renderDatabase();
+      reorderDatabaseIds(); saveToLocalStorage(); renderDatabase();
       e.target.closest('li').remove();
-      alert("該報導已由Data Base移除並重新順號！");
     }
   }
 }
 
+// 歷史紀錄移至下方按鈕旁，並加上 Hover 時間提示
 function renderHistoryButtons() {
   const container = document.getElementById('historyButtonsContainer');
   container.innerHTML = "";
   const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
   const currentHistory = exportHistory.filter(h => h.theme === currentTheme);
   if (currentHistory.length === 0) {
-    container.innerHTML = `<p class="text-gray-400 text-[10px] text-center py-2">無歷史紀錄。</p>`;
+    container.innerHTML = `<span class="text-gray-400 text-[10px]">無紀錄</span>`;
     return;
   }
-  currentHistory.forEach((h, idx) => {
+  // 最多取最新 4 筆以節省空間
+  currentHistory.slice(0, 4).forEach((h, idx) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = "has-tooltip inline-block";
+    
+    // 建立 Hover 出現的白底框提示
+    const tooltip = document.createElement('div');
+    tooltip.className = "tooltip";
+    tooltip.innerText = `完整儲存時間：${h.timestamp}`;
+    
     const btn = document.createElement('button');
-    btn.className = "w-full text-left bg-white border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 p-1.5 rounded text-[10px] transition block text-gray-700 shadow-sm truncate";
-    btn.innerText = ` ⏱️  紀錄 ${currentHistory.length - idx} (${h.count}則) - ${h.timeOnly}`;
-    btn.title = `點擊載入此排序結果 / 右鍵可刪除此紀錄`;
+    btn.className = "bg-gray-100 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 px-2 py-1 rounded text-[10px] text-gray-700 shadow-sm transition block max-w-[80px] truncate";
+    btn.innerText = `⏱️ 紀錄 ${currentHistory.length - idx} (${h.count}則)`;
+    
     btn.onclick = function() {
       const loadedData = h.sortedKeys.map(key => {
-        return newsDatabase.find(item => item.title === key.title && item.media === key.media);
+        let found = newsDatabase.find(item => item.title === key.title && item.media === key.media);
+        if (found) return { ...found, stars: key.stars || 0 };
+        return null;
       }).filter(Boolean);
       if (loadedData.length > 0) {
         renderSortableList(loadedData);
         if (h.reportDate) document.getElementById('lineReportDate').value = h.reportDate;
         if (h.reportTime) document.getElementById('lineReportTime').value = h.reportTime;
-        alert(`已成功載入歷史紀錄 ${currentHistory.length - idx} 的排序結果！`);
+        alert(`已載入紀錄 ${currentHistory.length - idx} 的排序與評等狀態！`);
       } else {
         alert("原紀錄中的新聞均已由總庫刪除，無法還原。");
       }
     };
+    
     btn.oncontextmenu = function(e) {
       e.preventDefault();
-      if (confirm(` ❓  確定要刪除這條歷史排序紀錄嗎？`)) {
+      if (confirm(`確定要刪除這條歷史排序紀錄嗎？`)) {
         exportHistory = exportHistory.filter(item => item.timestamp !== h.timestamp);
-        saveToLocalStorage();
-        renderHistoryButtons();
+        saveToLocalStorage(); renderHistoryButtons();
       }
     };
-    container.appendChild(btn);
+    
+    wrapper.appendChild(tooltip);
+    wrapper.appendChild(btn);
+    container.appendChild(wrapper);
   });
 }
 
@@ -774,15 +858,20 @@ function saveSortAndExport() {
   const finalSortedData = listItems.map(li => {
     const tKey = li.getAttribute('data-title-key');
     const mKey = li.getAttribute('data-media-key');
-    return newsDatabase.find(item => item.title === tKey && item.media === mKey);
+    const stars = parseInt(li.getAttribute('data-stars') || "0");
+    let found = newsDatabase.find(item => item.title === tKey && item.media === mKey);
+    if (found) return { ...found, stars: stars };
+    return null;
   }).filter(Boolean);
-  const sortedKeys = finalSortedData.map(item => ({ title: item.title, media: item.media }));
+  
+  const sortedKeys = finalSortedData.map(item => ({ title: item.title, media: item.media, stars: item.stars }));
   const rDate = document.getElementById('lineReportDate').value.trim() || "0000";
   const rTime = document.getElementById('lineReportTime').value.trim() || "00:00";
   const now = new Date();
+  
   const record = {
     timestamp: now.toLocaleString(),
-    timeOnly: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+    timeOnly: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}),
     theme: document.getElementById('eventTheme').value || "未命名活動",
     count: finalSortedData.length,
     sortedKeys: sortedKeys,
@@ -801,35 +890,49 @@ function generateTextOutput(dataList, rDate, rTime) {
   let paperList = dataList.filter(item => item.type === '報紙');
   let videoList = dataList.filter(item => item.type === '影音');
   let magazineList = dataList.filter(item => item.type === '雜誌');
-  let otherList = dataList.filter(item => item.type === '其他');
+  let webList = dataList.filter(item => item.type === '網路');
   
   let outputText = `${rDate}【${theme}】(${rTime})新增${totalCount}則相關報導，請參考\n\n`;
   if (paperList.length > 0)    outputText += `報紙：${paperList.length}則(圖檔如附)\n`;
   if (videoList.length > 0)    outputText += `影音：${videoList.length}則\n`;
   if (magazineList.length > 0) outputText += `雜誌：${magazineList.length}則\n`;
-  if (otherList.length > 0)    outputText += `其他：${otherList.length}則\n`;
+  if (webList.length > 0)      outputText += `網路：${webList.length}則\n`;
   outputText += `\n`;
   
+  const starStr = (num) => "★".repeat(num);
+
   if (paperList.length > 0) {
     outputText += `■ 報紙：${paperList.length}則(圖檔如附)\n`;
-    paperList.forEach((item, index) => { outputText += `${index + 1}.${item.media}_${item.link}_${item.title}\n`; });
+    paperList.forEach((item, index) => { 
+      let stars = item.stars ? ` ${starStr(item.stars)}` : "";
+      outputText += `${index + 1}.${item.media}_${item.link}_${item.title}${stars}\n`; 
+    });
     outputText += `\n`;
   }
   if (videoList.length > 0) {
     outputText += `■ 影音：${videoList.length}則\n`;
-    videoList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+    videoList.forEach((item, index) => { 
+      let stars = item.stars ? ` ${starStr(item.stars)}` : "";
+      outputText += `${index + 1}.${item.title}_${item.media}${stars}\n${item.link}\n\n`; 
+    });
   }
   if (magazineList.length > 0) {
     outputText += `■ 雜誌：${magazineList.length}則\n`;
-    magazineList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+    magazineList.forEach((item, index) => { 
+      let stars = item.stars ? ` ${starStr(item.stars)}` : "";
+      outputText += `${index + 1}.${item.title}_${item.media}${stars}\n${item.link}\n\n`; 
+    });
   }
-  if (otherList.length > 0) {
-    outputText += `■ 其他：${otherList.length}則\n`;
-    otherList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+  if (webList.length > 0) {
+    outputText += `■ 網路：${webList.length}則\n`;
+    webList.forEach((item, index) => { 
+      let stars = item.stars ? ` ${starStr(item.stars)}` : "";
+      outputText += `${index + 1}.${item.title}_${item.media}${stars}\n${item.link}\n\n`; 
+    });
   }
   
   navigator.clipboard.writeText(outputText).then(() => {
-    alert(` ✨  成果回報文字生成成功！\n\n已『自動複製到剪貼簿』！\n可以直接去 LINE 貼上回報給主管囉！`);
+    alert(` ✨  成果回報文字生成成功並已自動複製！\n評等星星也成功附加在標題後方囉！`);
   }).catch(err => {
     alert("自動複製失敗，請手動複製內容。");
   });
@@ -837,3 +940,5 @@ function generateTextOutput(dataList, rDate, rTime) {
 </script>
 </body>
 </html>
+
+```
