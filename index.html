@@ -112,7 +112,7 @@
 </div>
 
 <div id="keywordDropdownContainer" class="fixed bg-white border border-gray-200 shadow-2xl rounded-xl p-3 z-50 w-56 max-h-60 overflow-y-auto space-y-1.5 hidden text-left" onclick="event.stopPropagation();">
-  </div>
+</div>
 
 <div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-4">
 <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
@@ -143,11 +143,11 @@
 <div class="flex items-center space-x-2 text-[11px] gap-y-1 flex-wrap">
 <div class="flex items-center space-x-1">
 <span class="text-gray-500">日期:</span>
-<input type="text" id="lineReportDate" placeholder="0520" class="w-14 p-0.5 border rounded text-center font-bold text-indigo-700 bg-white">
+<input type="text" id="lineReportDate" oninput="saveCurrentSortStateToCache()" placeholder="0520" class="w-14 p-0.5 border rounded text-center font-bold text-indigo-700 bg-white">
 </div>
 <div class="flex items-center space-x-1">
 <span class="text-gray-500">時間:</span>
-<input type="text" id="lineReportTime" placeholder="18:00" class="w-14 p-0.5 border rounded text-center font-bold text-indigo-700 bg-white">
+<input type="text" id="lineReportTime" oninput="saveCurrentSortStateToCache()" placeholder="18:00" class="w-14 p-0.5 border rounded text-center font-bold text-indigo-700 bg-white">
 </div>
 <div class="border-l border-gray-300 pl-2 ml-1 flex items-center space-x-1">
 <input type="number" id="singleInsertId" placeholder="輸入資料編號" class="w-24 p-0.5 border border-amber-300 rounded text-center text-xs bg-white">
@@ -200,7 +200,7 @@
 <input type="date" id="newsDate" class="w-full p-1.5 border border-gray-300 rounded-md">
 </div>
 <div>
-<label class="block text-gray-400 mb-1">報導報導類型</label>
+<label class="block text-gray-400 mb-1">報導類型</label>
 <select id="newsType" class="w-full p-1.5 border border-gray-300 rounded-md">
 <option value="報紙">報紙</option>
 <option value="影音">影音</option>
@@ -281,6 +281,9 @@ window.onload = function() {
   initDatabaseSortable();
   renderDatabase();
   renderHistoryButtons();
+  
+  // 網頁重新整理時，自動檢查並還原排序框狀態
+  loadCurrentSortStateFromCache();
 };
 
 function initDatabaseSortable() {
@@ -300,6 +303,8 @@ function initDatabaseSortable() {
       reorderDatabaseIds();
       saveToLocalStorage();
       renderDatabase();
+      // 如果排序窗格開著，拉動庫順序也同步重刷
+      refreshSortSectionIfActive();
     }
   });
 }
@@ -402,7 +407,7 @@ function importNews() {
     media: media || "未填",
     title: title,
     link: link || "未填",
-    reporter: reporter || "", // 未填時直接維持空白字串
+    reporter: reporter || "",
     keywords: keywords || ""
   };
   newsDatabase.push(newsItem);
@@ -469,7 +474,6 @@ function getExportedIdsFromHistory() {
   return Array.from(exportedIds);
 }
 
-// 實作各欄位右鍵點擊修改核心邏輯
 function handleFieldRightClick(e, id, fieldName, fieldLabel) {
   e.preventDefault(); e.stopPropagation();
   const item = newsDatabase.find(x => x.id === id);
@@ -482,31 +486,7 @@ function handleFieldRightClick(e, id, fieldName, fieldLabel) {
     item[fieldName] = newValue.trim();
     saveToLocalStorage();
     renderDatabase();
-    
-    // 如果目前下方有開著排序框，同步刷新排序框內的資訊
-    const sortSection = document.getElementById('sortSection');
-    if (!sortSection.classList.contains('hidden')) {
-      const listItems = Array.from(document.getElementById('sortableList').children);
-      const currentSortData = listItems.map(li => {
-        const tKey = li.getAttribute('data-title-key');
-        const mKey = li.getAttribute('data-media-key');
-        const stars = parseInt(li.getAttribute('data-stars') || "0");
-        
-        // 如果改的是標題或媒體名稱，對照時需找原來的配對
-        let found;
-        if (fieldName === 'title' && tKey === originalValue && item.media === mKey) {
-          found = item;
-        } else if (fieldName === 'media' && mKey === originalValue && item.title === tKey) {
-          found = item;
-        } else {
-          found = newsDatabase.find(db => db.title === tKey && db.media === mKey);
-        }
-        
-        if (found) return { ...found, stars: stars };
-        return null;
-      }).filter(Boolean);
-      renderSortableList(currentSortData);
-    }
+    refreshSortSectionIfActive();
   }
 }
 
@@ -539,7 +519,7 @@ function renderDatabase() {
     }
     
     const dateColorClass = activeExportedIds.includes(item.id) ? "text-red-600 font-semibold" : "";
-    const reporterText = item.reporter || ""; // 確保未填時為完全空白不顯示「未填」
+    const reporterText = item.reporter || "";
 
     tr.innerHTML = `
       <td class="p-2 text-center font-medium text-red-500 cursor-pointer bg-red-50/30 hover:bg-red-100 font-bold select-none"
@@ -584,6 +564,7 @@ function selectCustomType(type) {
       item.type = type;
       saveToLocalStorage();
       renderDatabase();
+      refreshSortSectionIfActive();
     }
   }
   hideCustomMenu();
@@ -600,6 +581,7 @@ function handleIdRightClick(e, id) {
     reorderDatabaseIds();
     saveToLocalStorage();
     renderDatabase();
+    refreshSortSectionIfActive();
   }
 }
 
@@ -628,6 +610,66 @@ function updateCounters(currentDisplayData) {
 function saveToLocalStorage() {
   localStorage.setItem('prNewsDatabase', JSON.stringify(newsDatabase));
   localStorage.setItem('prExportHistory', JSON.stringify(exportHistory));
+}
+
+// 輔助函式：當大資料庫被更新或重新整理時，重刷下方排序清單以確保「編號」和「內容」完美對齊同步
+function refreshSortSectionIfActive() {
+  const sortSection = document.getElementById('sortSection');
+  if (!sortSection.classList.contains('hidden')) {
+    const listItems = Array.from(document.getElementById('sortableList').children);
+    const currentSortData = listItems.map(li => {
+      const tKey = li.getAttribute('data-title-key');
+      const mKey = li.getAttribute('data-media-key');
+      const stars = parseInt(li.getAttribute('data-stars') || "0");
+      let found = newsDatabase.find(db => db.title === tKey && db.media === mKey);
+      if (found) return { ...found, stars: stars };
+      return null;
+    }).filter(Boolean);
+    renderSortableList(currentSortData);
+    saveCurrentSortStateToCache();
+  }
+}
+
+// 狀態記憶：將當前開著的排序框暫存至瀏覽器，重整網頁不消失
+function saveCurrentSortStateToCache() {
+  const sortSection = document.getElementById('sortSection');
+  if (sortSection.classList.contains('hidden')) {
+    localStorage.removeItem('prCurrentSortCache');
+    return;
+  }
+  const listItems = Array.from(document.getElementById('sortableList').children);
+  const cacheState = {
+    reportDate: document.getElementById('lineReportDate').value,
+    reportTime: document.getElementById('lineReportTime').value,
+    list: listItems.map(li => ({
+      title: li.getAttribute('data-title-key'),
+      media: li.getAttribute('data-media-key'),
+      stars: parseInt(li.getAttribute('data-stars') || "0")
+    }))
+  };
+  localStorage.setItem('prCurrentSortCache', JSON.stringify(cacheState));
+}
+
+function loadCurrentSortStateFromCache() {
+  const cacheStr = localStorage.getItem('prCurrentSortCache');
+  if (!cacheStr) return;
+  try {
+    const cacheData = JSON.parse(cacheStr);
+    if (cacheData.list && cacheData.list.length > 0) {
+      const restoredList = cacheData.list.map(s => {
+        let item = newsDatabase.find(db => db.title === s.title && db.media === s.media);
+        if (item) return { ...item, stars: s.stars || 0 };
+        return null;
+      }).filter(Boolean);
+      
+      if (restoredList.length > 0) {
+        document.getElementById('lineReportDate').value = cacheData.reportDate || "";
+        document.getElementById('lineReportTime').value = cacheData.reportTime || "";
+        renderSortableList(restoredList);
+        document.getElementById('sortSection').classList.remove('hidden');
+      }
+    }
+  } catch(e) { localStorage.removeItem('prCurrentSortCache'); }
 }
 
 // ================= 專案 匯出 / 匯入 =================
@@ -685,6 +727,7 @@ function importProject(e) {
             document.getElementById('lineReportDate').value = data.reportDate || "";
             document.getElementById('lineReportTime').value = data.reportTime || "";
             if (data.sortVisible) document.getElementById('sortSection').classList.remove('hidden');
+            saveCurrentSortStateToCache();
           }
         }
         renderHistoryButtons();
@@ -788,6 +831,8 @@ function filterAndOpenSortModal() {
   renderSortableList(filteredNewsResult);
   document.getElementById('sortSection').classList.remove('hidden');
   document.getElementById('sortSection').scrollIntoView({ behavior: 'smooth' });
+  
+  saveCurrentSortStateToCache();
 }
 
 function renderSortableList(dataList) {
@@ -798,7 +843,13 @@ function renderSortableList(dataList) {
     sortList.appendChild(li);
   });
   if (sortableInstance) sortableInstance.destroy();
-  sortableInstance = new Sortable(sortList, { animation: 150 });
+  sortableInstance = new Sortable(sortList, { 
+    animation: 150,
+    onEnd: function() {
+      // 拖動完排序清單後，也同步更新快取狀態
+      saveCurrentSortStateToCache();
+    }
+  });
 }
 
 function createSortableLiElement(item) {
@@ -817,7 +868,6 @@ function createSortableLiElement(item) {
     linkHtml = `<span class="text-gray-400 text-[10px] truncate block w-12 text-center" title="${item.link}">${item.link}</span>`;
   }
 
-  // 重新調整內部結構：將記者拆為獨立一欄，標題設定為 flex-1 且帶有 truncate 限制
   li.innerHTML = `
     <div class="flex items-center space-x-2 pointer-events-none flex-1 truncate">
       <span class="text-gray-300 font-bold w-8 text-center text-sm"> ☰ </span>
@@ -850,6 +900,7 @@ function toggleStars(event, container) {
     if (idx < currentStars) s.classList.add('active');
     else s.classList.remove('active');
   });
+  saveCurrentSortStateToCache();
 }
 
 function insertSingleToCurrentSort() {
@@ -869,6 +920,8 @@ function insertSingleToCurrentSort() {
   sortList.appendChild(newLi);
   idInput.value = "";
   newLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  
+  saveCurrentSortStateToCache();
 }
 
 function handleSortItemRightClick(e, titleKey, mediaKey) {
@@ -878,11 +931,15 @@ function handleSortItemRightClick(e, titleKey, mediaKey) {
   const action = prompt(`操作：【${targetItem.media}】\n1 : 僅從本次排序移除\n2 : 從資料庫完全刪除`);
   if (action === '1') {
     e.target.closest('li').remove();
+    saveCurrentSortStateToCache();
   } else if (action === '2') {
     if (confirm(`確定從總資料庫完全刪除嗎？`)) {
       newsDatabase = newsDatabase.filter(item => !(item.title === titleKey && item.media === mediaKey));
-      reorderDatabaseIds(); saveToLocalStorage(); renderDatabase();
+      reorderDatabaseIds(); 
+      saveToLocalStorage(); 
+      renderDatabase();
       e.target.closest('li').remove();
+      refreshSortSectionIfActive();
     }
   }
 }
@@ -922,7 +979,9 @@ function renderHistoryButtons() {
         renderSortableList(loadedData);
         if (h.reportDate) document.getElementById('lineReportDate').value = h.reportDate;
         if (h.reportTime) document.getElementById('lineReportTime').value = h.reportTime;
+        document.getElementById('sortSection').classList.remove('hidden');
         renderDatabase();
+        saveCurrentSortStateToCache();
         alert(`已載入紀錄 ${idx + 1} 的排序狀態！`);
       } else {
         alert("原紀錄中的新聞均已由總庫刪除，無法還原。");
@@ -936,6 +995,7 @@ function renderHistoryButtons() {
         saveToLocalStorage(); 
         renderHistoryButtons();
         renderDatabase();
+        refreshSortSectionIfActive();
       }
     };
     
@@ -977,6 +1037,7 @@ function saveSortAndExport() {
   saveToLocalStorage();
   renderHistoryButtons();
   renderDatabase();
+  saveCurrentSortStateToCache();
   generateTextOutput(finalSortedData, rDate, rTime);
 }
 
