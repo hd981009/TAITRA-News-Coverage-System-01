@@ -621,7 +621,16 @@ function refreshSortSectionIfActive() {
       const tKey = li.getAttribute('data-title-key');
       const mKey = li.getAttribute('data-media-key');
       const stars = parseInt(li.getAttribute('data-stars') || "0");
-      let found = newsDatabase.find(db => db.title === tKey && db.media === mKey);
+      
+      // 💡 同步修改：加入唯一的 id 識別
+      const idSpan = li.querySelector('.text-red-500');
+      const targetId = idSpan ? parseInt(idSpan.innerText) : null;
+      
+      let found = newsDatabase.find(db => db.id === targetId);
+      if (!found) {
+        found = newsDatabase.find(db => db.title === tKey && db.media === mKey);
+      }
+      
       if (found) return { ...found, stars: stars };
       return null;
     }).filter(Boolean);
@@ -1011,7 +1020,17 @@ function saveSortAndExport() {
     const tKey = li.getAttribute('data-title-key');
     const mKey = li.getAttribute('data-media-key');
     const stars = parseInt(li.getAttribute('data-stars') || "0");
-    let found = newsDatabase.find(item => item.title === tKey && item.media === mKey);
+    
+    // 💡 關鍵優化：從 DOM 中取得該列原本顯示的「編號」與「類型」
+    const idSpan = li.querySelector('.text-red-500');
+    const targetId = idSpan ? parseInt(idSpan.innerText) : null;
+    
+    // 優先用唯一的 id 去資料庫找，找不到再用標題+媒體比對，確保抓到正確類型的報導
+    let found = newsDatabase.find(item => item.id === targetId);
+    if (!found) {
+      found = newsDatabase.find(item => item.title === tKey && item.media === mKey);
+    }
+    
     if (found) return { ...found, stars: stars };
     return null;
   }).filter(Boolean);
