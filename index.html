@@ -73,7 +73,7 @@
 <div class="md:col-span-3 space-y-4">
 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
 <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
-<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATABASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序，各欄位按右鍵可快速修改)</span></h3>
+<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序，各欄位按右鍵可快速修改)</span></h3>
 <div class="flex space-x-2 text-xs">
 <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
   📊  匯出 CSV
@@ -613,32 +613,7 @@ function saveToLocalStorage() {
 }
 
 // 輔助函式：當大資料庫被更新或重新整理時，重刷下方排序清單以確保「編號」和「內容」完美對齊同步
-function refreshSortSectionIfActive() {
-  const sortSection = document.getElementById('sortSection');
-  if (!sortSection.classList.contains('hidden')) {
-    const listItems = Array.from(document.getElementById('sortableList').children);
-    const currentSortData = listItems.map(li => {
-      const tKey = li.getAttribute('data-title-key');
-      const mKey = li.getAttribute('data-media-key');
-      const stars = parseInt(li.getAttribute('data-stars') || "0");
-      
-      // 💡 同步修改：加入唯一的 id 識別
-      const idSpan = li.querySelector('.text-red-500');
-      const targetId = idSpan ? parseInt(idSpan.innerText) : null;
-      
-      let found = newsDatabase.find(db => db.id === targetId);
-      if (!found) {
-        found = newsDatabase.find(db => db.title === tKey && db.media === mKey);
-      }
-      
-      if (found) return { ...found, stars: stars };
-      return null;
-    }).filter(Boolean);
-    renderSortableList(currentSortData);
-    saveCurrentSortStateToCache();
-  }
-}
-
+function refreshSortSectionIfActive() { const sortSection = document.getElementById('sortSection'); if (!sortSection.classList.contains('hidden')) { const listItems = Array.from(document.getElementById('sortableList').children); const currentSortData = listItems.map(li => { const tKey = li.getAttribute('data-title-key'); const mKey = li.getAttribute('data-media-key'); const stars = parseInt(li.getAttribute('data-stars') || "0"); // 💡 同步修改：加入唯一的 id 識別 const idSpan = li.querySelector('.text-red-500'); const targetId = idSpan ? parseInt(idSpan.innerText) : null; let found = newsDatabase.find(db => db.id === targetId); if (!found) { found = newsDatabase.find(db => db.title === tKey && db.media === mKey); } if (found) return { ...found, stars: stars }; return null; }).filter(Boolean); renderSortableList(currentSortData); saveCurrentSortStateToCache(); } }
 // 狀態記憶：將當前開著的排序框暫存至瀏覽器，重整網頁不消失
 function saveCurrentSortStateToCache() {
   const sortSection = document.getElementById('sortSection');
@@ -708,11 +683,21 @@ function exportProject() {
 }
 
 function importProject(e) {
-  // ... 前段省略
-  exportHistory = data.history || [];
-  document.getElementById('eventTheme').value = data.theme || "";
-  reorderDatabaseIds();
-  saveTheme(); saveToLocalStorage(); renderDatabase();
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = JSON.parse(evt.target.result);
+      if (data.database) {
+        newsDatabase = data.database.map(item => {
+          if (item.reporter === "未填") item.reporter = "";
+          return item;
+        });
+        exportHistory = data.history || [];
+        document.getElementById('eventTheme').value = data.theme || "";
+        reorderDatabaseIds();
+        saveTheme(); saveToLocalStorage(); renderDatabase();
         
         if (data.currentSort && data.currentSort.length > 0) {
           filteredNewsResult = data.currentSort.map(s => {
@@ -1004,29 +989,7 @@ function renderHistoryButtons() {
   });
 }
 
-function saveSortAndExport() {
-  const listItems = Array.from(document.getElementById('sortableList').children);
-  const finalSortedData = listItems.map(li => {
-    const tKey = li.getAttribute('data-title-key');
-    const mKey = li.getAttribute('data-media-key');
-    const stars = parseInt(li.getAttribute('data-stars') || "0");
-    
-    // 💡 關鍵優化：從 DOM 中取得該列原本顯示的「編號」與「類型」
-    const idSpan = li.querySelector('.text-red-500');
-    const targetId = idSpan ? parseInt(idSpan.innerText) : null;
-    
-    // 優先用唯一的 id 去資料庫找，找不到再用標題+媒體比對，確保抓到正確類型的報導
-    let found = newsDatabase.find(item => item.id === targetId);
-    if (!found) {
-      found = newsDatabase.find(item => item.title === tKey && item.media === mKey);
-    }
-    
-    if (found) return { ...found, stars: stars };
-    return null;
-  }).filter(Boolean);
-  
-  if (finalSortedData.length === 0) return alert("排序清單內沒有資料可以匯出喔！");
-  
+function saveSortAndExport() { const listItems = Array.from(document.getElementById('sortableList').children); const finalSortedData = listItems.map(li => { const tKey = li.getAttribute('data-title-key'); const mKey = li.getAttribute('data-media-key'); const stars = parseInt(li.getAttribute('data-stars') || "0"); // 💡 關鍵優化：從 DOM 中取得該列原本顯示的「編號」與「類型」 const idSpan = li.querySelector('.text-red-500'); const targetId = idSpan ? parseInt(idSpan.innerText) : null; // 優先用唯一的 id 去資料庫找，找不到再用標題+媒體比對，確保抓到正確類型的報導 let found = newsDatabase.find(item => item.id === targetId); if (!found) { found = newsDatabase.find(item => item.title === tKey && item.media === mKey); } if (found) return { ...found, stars: stars }; return null; }).filter(Boolean); if (finalSortedData.length === 0) return alert("排序清單內沒有資料可以匯出喔！");  
   const sortedKeys = finalSortedData.map(item => ({ title: item.title, media: item.media, stars: item.stars }));
   const rDate = document.getElementById('lineReportDate').value.trim() || "0000";
   const rTime = document.getElementById('lineReportTime').value.trim() || "00:00";
