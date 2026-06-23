@@ -708,50 +708,11 @@ function exportProject() {
 }
 
 function importProject(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    try {
-      const data = JSON.parse(evt.target.result);
-      if (data.database) {
-        newsDatabase = data.database.map(item => {
-          if (item.reporter === "未填") item.reporter = "";
-          return item;
-        });
-        exportHistory = data.history || [];
-        
-        // 💡 關鍵優化：精準還原活動主題並立即存入 localStorage
-        const restoredTheme = data.theme || "";
-        document.getElementById('eventTheme').value = restoredTheme;
-        localStorage.setItem('prEventTheme', restoredTheme); 
-        
-        reorderDatabaseIds();
-        saveToLocalStorage(); 
-        renderDatabase();
-        
-        if (data.currentSort && data.currentSort.length > 0) {
-          filteredNewsResult = data.currentSort.map(s => {
-            let item = newsDatabase.find(db => db.title === s.title && db.media === s.media);
-            if (item) return { ...found, stars: s.stars || 0 }; // 這裡會自動套用剛剛優化過的 id 比對邏輯
-            return null;
-          }).filter(Boolean);
-          
-          if (filteredNewsResult.length > 0) {
-            renderSortableList(filteredNewsResult);
-            document.getElementById('lineReportDate').value = data.reportDate || "";
-            document.getElementById('lineReportTime').value = data.reportTime || "";
-            if (data.sortVisible) document.getElementById('sortSection').classList.remove('hidden');
-            saveCurrentSortStateToCache();
-          }
-        }
-        renderHistoryButtons(); // 歷史紀錄按鈕也會根據新主題自動刷新
-        alert("專案備份與活動主題已完全匯入成功！");
-      }
-    } catch (err) { alert("無效的專案檔案！"); }
-  };
-  reader.readAsText(file);
-}
+  // ... 前段省略
+  exportHistory = data.history || [];
+  document.getElementById('eventTheme').value = data.theme || "";
+  reorderDatabaseIds();
+  saveTheme(); saveToLocalStorage(); renderDatabase();
         
         if (data.currentSort && data.currentSort.length > 0) {
           filteredNewsResult = data.currentSort.map(s => {
