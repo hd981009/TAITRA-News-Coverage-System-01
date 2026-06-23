@@ -7,38 +7,38 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <style>
-  #customTypeMenu { display: none; position: absolute; z-index: 100; min-width: 120px; }
-  .cursor-move-row { cursor: move; }
-  .has-tooltip { position: relative; }
-  .tooltip {
-    display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-    background: white; color: #374151; padding: 4px 8px; font-size: 11px; border: 1px solid #E5E7EB;
-    border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; z-index: 50;
+ #customTypeMenu { display: none; position: absolute; z-index: 100; min-width: 120px; }
+ .cursor-move-row { cursor: move; }
+ .has-tooltip { position: relative; }
+ .tooltip {
+   display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+   background: white; color: #374151; padding: 4px 8px; font-size: 11px; border: 1px solid #E5E7EB;
+   border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; z-index: 50;
   }
-  .has-tooltip:hover .tooltip { display: block; }
-  .star-rating { cursor: pointer; display: inline-flex; gap: 2px; }
-  .star { font-size: 14px; color: #D1D5DB; transition: color 0.1s; }
-  .star.active { color: #F59E0B; }
-  .modal-collapsed { height: 38px !important; overflow: hidden !important; }
+ .has-tooltip:hover .tooltip { display: block; }
+ .star-rating { cursor: pointer; display: inline-flex; gap: 2px; }
+ .star { font-size: 14px; color: #D1D5DB; transition: color 0.1s; }
+ .star.active { color: #F59E0B; }
+ .modal-collapsed { height: 38px !important; overflow: hidden !important; }
 </style>
 </head>
 <body class="bg-gray-50 min-h-screen p-4 font-sans text-gray-800" onclick="hideCustomMenu(); hideKeywordDropdown(event);">
 <div class="max-w-7xl mx-auto space-y-4">
-
+ 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
-
+ 
 <div class="md:col-span-1 space-y-4">
 <div class="bg-indigo-600 text-white p-4 rounded-xl shadow border border-indigo-700">
 <div class="flex justify-between items-center mb-2">
-  <h1 class="text-base font-bold">公關新聞收錄系統</h1>
-  <button onclick="triggerResetWithBackup()" class="bg-red-500 hover:bg-red-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow transition">
-    RESET
-  </button>
+ <h1 class="text-base font-bold">公關新聞收錄系統</h1>
+ <button onclick="triggerResetWithBackup()" class="bg-red-500 hover:bg-red-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow transition">
+   RESET
+ </button>
 </div>
 <label class="block text-xs font-medium text-indigo-200 mb-1">當前活動主題</label>
 <input type="text" id="eventTheme" oninput="saveTheme()" placeholder="請輸入活動主題..." class="w-full p-2 border border-indigo-400 bg-indigo-700 text-white placeholder-indigo-300 text-sm rounded-md focus:ring-2 focus:ring-white focus:outline-none">
 </div>
-
+ 
 <div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-3">
 <div class="flex justify-between items-center pb-1 border-b">
 <h3 class="text-sm font-semibold text-gray-700">收錄則數統計</h3>
@@ -52,34 +52,34 @@
 <hr class="my-1.5">
 <div class="flex justify-between text-sm font-bold text-gray-800"><span>當前顯示/總共：</span><span><span id="count-filtered">0</span>/<span id="count-total">0</span></span></div>
 </div>
-
+ 
 <hr class="my-2">
 <button onclick="toggleInputModal(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-2 text-xs font-bold rounded-md shadow transition text-center block">
-  ➕  開啟新增報導窗格
+  ➕ 開啟新增報導窗格
 </button>
-
+ 
 <div class="grid grid-cols-2 gap-2">
 <button onclick="exportProject()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium rounded-md border border-blue-200 transition text-center">
-  📤  匯出專案
+  📤 匯出專案
 </button>
 <button onclick="document.getElementById('importProjectFile').click()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 py-1.5 px-2 text-xs font-medium rounded-md border border-amber-200 transition text-center">
-  📥  匯入專案
+  📥 匯入專案
 </button>
 <input type="file" id="importProjectFile" class="hidden" accept=".json" onchange="importProject(event)">
 </div>
 </div>
 </div>
-
+ 
 <div class="md:col-span-3 space-y-4">
 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
 <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
 <h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序，各欄位按右鍵可快速修改)</span></h3>
 <div class="flex space-x-2 text-xs">
 <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
-  📊  匯出 CSV
+  📊 匯出 CSV
 </button>
 <button onclick="document.getElementById('importCSVFile').click()" class="bg-teal-50 text-teal-700 border border-teal-200 px-2.5 py-1 rounded hover:bg-teal-100 transition">
-  📊  匯入 CSV
+  📊 匯入 CSV
 </button>
 <input type="file" id="importCSVFile" class="hidden" accept=".csv" onchange="importCSV(event)">
 </div>
@@ -96,12 +96,12 @@
 <th class="p-2.5 w-48">連結/版位</th>
 <th class="p-2.5 w-20">記者</th>
 <th class="p-2.5 w-40">
-  <div class="flex items-center space-x-1">
-    <span>關鍵字</span>
-    <button onclick="toggleKeywordDropdown(event)" id="kwFilterBtn" class="bg-indigo-600 text-white px-1.5 py-0.5 rounded hover:bg-indigo-700 text-[10px] font-bold transition">
-      篩選
-    </button>
-  </div>
+ <div class="flex items-center space-x-1">
+   <span>關鍵字</span>
+   <button onclick="toggleKeywordDropdown(event)" id="kwFilterBtn" class="bg-indigo-600 text-white px-1.5 py-0.5 rounded hover:bg-indigo-700 text-[10px] font-bold transition">
+     篩選
+   </button>
+ </div>
 </th>
 </tr>
 </thead>
@@ -110,10 +110,10 @@
 </table>
 </div>
 </div>
-
+ 
 <div id="keywordDropdownContainer" class="fixed bg-white border border-gray-200 shadow-2xl rounded-xl p-3 z-50 w-56 max-h-60 overflow-y-auto space-y-1.5 hidden text-left" onclick="event.stopPropagation();">
 </div>
-
+ 
 <div class="bg-white p-4 rounded-xl shadow border border-gray-200 space-y-4">
 <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
 <div>
@@ -130,15 +130,15 @@
 </div>
 <div>
 <button onclick="filterAndOpenSortModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-md font-medium text-xs shadow transition">
-  🔍  篩選並送入下方排序
+  🔍 篩選並送入下方排序
 </button>
 </div>
 </div>
-
+ 
 <div id="sortSection" class="border border-gray-200 rounded-xl overflow-hidden hidden bg-gray-50">
 <div class="bg-gray-100 px-3 py-2 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
 <div>
-<h3 class="text-sm font-bold text-gray-800"> 🔬  調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
+<h3 class="text-sm font-bold text-gray-800"> 🔬 調整報導重要性排序（滑鼠上下拖曳即可排序）</h3>
 </div>
 <div class="flex items-center space-x-2 text-[11px] gap-y-1 flex-wrap">
 <div class="flex items-center space-x-1">
@@ -155,7 +155,7 @@
 </div>
 </div>
 </div>
-
+ 
 <div class="flex flex-col overflow-hidden bg-white">
 <div class="bg-gray-200 border-b border-gray-300 flex text-[11px] text-gray-600 font-semibold py-1 px-2 select-none space-x-2">
 <div class="w-8 text-center">拖曳</div>
@@ -169,28 +169,27 @@
 </div>
 <ul id="sortableList" class="divide-y divide-gray-200 min-h-[180px] max-h-[350px] overflow-y-auto"></ul>
 </div>
-
+ 
 <div class="px-3 py-2 border-t bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
 <div class="flex items-center space-x-2 w-full md:w-auto">
-  <div id="historyButtonsContainer" class="flex flex-wrap gap-1"></div>
+ <div id="historyButtonsContainer" class="flex flex-wrap gap-1"></div>
 </div>
 <button onclick="saveSortAndExport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded font-medium text-xs shadow-sm shrink-0 ml-auto">
-  💾  儲存排序並匯出文字內容 (自動複製)
+  💾 儲存排序並匯出文字內容 (自動複製)
 </button>
 </div>
 </div>
 </div>
-
+ 
 </div>
 </div>
-</div>
-
+ 
 <div id="inputModal" class="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-40 hidden transition-all duration-200">
 <div class="bg-indigo-600 text-white p-3 rounded-t-2xl flex justify-between items-center select-none">
-<h3 class="text-xs font-bold flex items-center"> 📝  新增報導資訊</h3>
+<h3 class="text-xs font-bold flex items-center"> 📝 新增報導資訊</h3>
 <div class="flex items-center space-x-1.5">
-  <button id="collapseToggleBtn" onclick="toggleCollapseModal()" class="text-indigo-200 hover:text-white text-xs font-bold bg-indigo-700 px-1.5 py-0.5 rounded">➖</button>
-  <button onclick="toggleInputModal(false)" class="text-indigo-200 hover:text-white text-xs font-medium bg-indigo-700 px-2 py-0.5 rounded"> ✕ </button>
+ <button id="collapseToggleBtn" onclick="toggleCollapseModal()" class="text-indigo-200 hover:text-white text-xs font-bold bg-indigo-700 px-1.5 py-0.5 rounded">➖</button>
+ <button onclick="toggleInputModal(false)" class="text-indigo-200 hover:text-white text-xs font-medium bg-indigo-700 px-2 py-0.5 rounded"> ✕ </button>
 </div>
 </div>
 <div id="inputModalBody" class="p-4 space-y-2.5 max-h-[75vh] overflow-y-auto text-xs">
@@ -232,38 +231,38 @@
 </div>
 </div>
 <button onclick="importNews()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 mt-2 rounded-md font-bold shadow transition">
-  ➕  匯入此筆資料
+  ➕ 匯入此筆資料
 </button>
 </div>
 </div>
-
+ 
 <div id="resetConfirmModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 space-y-4 border border-gray-200">
-    <h3 class="text-sm font-bold text-gray-900 flex items-center"> ⚠️  系統重設安全確認</h3>
-    <p class="text-xs text-gray-600 leading-relaxed">
-      您正準備將「公關新聞收錄系統」完整歸零。為了避免重要報表遺失，系統強烈建議您在重設前匯出專案備份。
-    </p>
-    <div class="flex flex-col gap-2 pt-2">
-      <button onclick="executeReset(true)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-3 text-xs font-bold rounded-md shadow transition text-center">
-        💡  是，請幫我匯出專案備份並重設（推薦）
-      </button>
-      <button onclick="executeReset(false)" class="w-full bg-red-100 hover:bg-red-200 text-red-700 py-2 px-3 text-xs font-medium rounded-md transition text-center">
-        否，不保留備份直接重設
-      </button>
-      <button onclick="toggleResetModal(false)" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-500 py-1.5 px-3 text-xs font-medium rounded-md transition text-center">
-        取消
-      </button>
-    </div>
-  </div>
+ <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 space-y-4 border border-gray-200">
+   <h3 class="text-sm font-bold text-gray-900 flex items-center"> ⚠️ 系統重設安全確認</h3>
+   <p class="text-xs text-gray-600 leading-relaxed">
+     您正準備將「公關新聞收錄系統」完整歸零。為了避免重要報表遺失，系統強烈建議您在重設前匯出專案備份。
+   </p>
+   <div class="flex flex-col gap-2 pt-2">
+     <button onclick="executeReset(true)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-3 text-xs font-bold rounded-md shadow transition text-center">
+       💡 是，請幫我匯出專案備份並重設（推薦）
+     </button>
+     <button onclick="executeReset(false)" class="w-full bg-red-100 hover:bg-red-200 text-red-700 py-2 px-3 text-xs font-medium rounded-md transition text-center">
+       否，不保留備份直接重設
+     </button>
+     <button onclick="toggleResetModal(false)" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-500 py-1.5 px-3 text-xs font-medium rounded-md transition text-center">
+       取消
+     </button>
+   </div>
+ </div>
 </div>
-
+ 
 <div id="customTypeMenu" class="bg-white border border-gray-200 shadow-md rounded-md py-1 text-xs">
-  <div onclick="selectCustomType('報紙')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">報紙</div>
-  <div onclick="selectCustomType('影音')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">影音</div>
-  <div onclick="selectCustomType('雜誌')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">雜誌</div>
-  <div onclick="selectCustomType('網路')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">網路</div>
+ <div onclick="selectCustomType('報紙')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">報紙</div>
+ <div onclick="selectCustomType('影音')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">影音</div>
+ <div onclick="selectCustomType('雜誌')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">雜誌</div>
+ <div onclick="selectCustomType('網路')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">網路</div>
 </div>
-
+ 
 <script>
 let newsDatabase = JSON.parse(localStorage.getItem('prNewsDatabase')) || [];
 let exportHistory = JSON.parse(localStorage.getItem('prExportHistory')) || [];
@@ -274,798 +273,706 @@ let dbSortableInstance = null;
 let selectedKeywords = [];
 let currentEditingMenuId = null;
 let currentlyVisibleIds = [];
-
+ 
 window.onload = function() {
-  document.getElementById('eventTheme').value = localStorage.getItem('prEventTheme') || "";
-  document.getElementById('newsDate').valueAsDate = new Date();
-  initDatabaseSortable();
-  renderDatabase();
-  renderHistoryButtons();
+ document.getElementById('eventTheme').value = localStorage.getItem('prEventTheme') || "";
+ document.getElementById('newsDate').valueAsDate = new Date();
+ initDatabaseSortable();
+ renderDatabase();
+ renderHistoryButtons();
   
   // 網頁重新整理時，自動檢查並還原排序框狀態
-  loadCurrentSortStateFromCache();
+ loadCurrentSortStateFromCache();
 };
-
+ 
 function initDatabaseSortable() {
-  const tbody = document.getElementById('databaseBody');
-  dbSortableInstance = new Sortable(tbody, {
-    animation: 150,
-    handle: '.cursor-move-row',
-    onEnd: function() {
-      const rows = Array.from(tbody.querySelectorAll('tr'));
-      const newDatabase = [];
-      rows.forEach((row) => {
-        const id = parseInt(row.getAttribute('data-db-id'));
-        const found = newsDatabase.find(item => item.id === id);
-        if (found) newDatabase.push(found);
-      });
-      newsDatabase = newDatabase;
-      reorderDatabaseIds();
-      saveToLocalStorage();
-      renderDatabase();
-      // 如果排序窗格開著，拉動庫順序也同步重刷
-      refreshSortSectionIfActive();
+ const tbody = document.getElementById('databaseBody');
+ dbSortableInstance = new Sortable(tbody, {
+   animation: 150,
+   handle: '.cursor-move-row',
+   onEnd: function() {
+     const rows = Array.from(tbody.querySelectorAll('tr'));
+     const newDatabase = [];
+     rows.forEach((row) => {
+       const id = parseInt(row.getAttribute('data-db-id'));
+       const found = newsDatabase.find(item => item.id === id);
+       if (found) newDatabase.push(found);
+     });
+     newsDatabase = newDatabase;
+     reorderDatabaseIds();
+     saveToLocalStorage();
+     renderDatabase();
+     // 如果排序窗格開著，拉動庫順序也同步重刷
+     refreshSortSectionIfActive();
     }
   });
 }
-
+ 
 function saveTheme() {
-  localStorage.setItem('prEventTheme', document.getElementById('eventTheme').value);
+ localStorage.setItem('prEventTheme', document.getElementById('eventTheme').value);
 }
-
+ 
 function toggleInputModal(show) {
-  const modal = document.getElementById('inputModal');
+ const modal = document.getElementById('inputModal');
   if (show) {
-    modal.classList.remove('hidden');
-    modal.classList.remove('modal-collapsed');
-    document.getElementById('collapseToggleBtn').innerText = "➖";
+   modal.classList.remove('hidden');
+   modal.classList.remove('modal-collapsed');
+   document.getElementById('collapseToggleBtn').innerText = "➖";
   } else {
-    modal.classList.add('hidden');
+   modal.classList.add('hidden');
   }
 }
-
+ 
 function toggleCollapseModal() {
-  const modal = document.getElementById('inputModal');
-  const btn = document.getElementById('collapseToggleBtn');
+ const modal = document.getElementById('inputModal');
+ const btn = document.getElementById('collapseToggleBtn');
   if (modal.classList.contains('modal-collapsed')) {
-    modal.classList.remove('modal-collapsed');
-    btn.innerText = "➖";
+   modal.classList.remove('modal-collapsed');
+   btn.innerText = "➖";
   } else {
-    modal.classList.add('modal-collapsed');
-    btn.innerText = "⬜";
+   modal.classList.add('modal-collapsed');
+   btn.innerText = "⬜";
   }
 }
-
+ 
 function toggleKeywordDropdown(e) {
-  e.stopPropagation();
-  const menu = document.getElementById('keywordDropdownContainer');
+ e.stopPropagation();
+ const menu = document.getElementById('keywordDropdownContainer');
   if (menu.classList.contains('hidden')) {
-    const btn = document.getElementById('kwFilterBtn');
-    const rect = btn.getBoundingClientRect();
-    menu.style.left = (rect.left - 150) + 'px';
-    menu.style.top = (rect.bottom + window.scrollY + 5) + 'px';
-    menu.classList.remove('hidden');
+   const btn = document.getElementById('kwFilterBtn');
+   const rect = btn.getBoundingClientRect();
+   menu.style.left = (rect.left - 150) + 'px';
+   menu.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+   menu.classList.remove('hidden');
   } else {
-    menu.classList.add('hidden');
+   menu.classList.add('hidden');
   }
 }
-
+ 
 function hideKeywordDropdown(e) {
-  document.getElementById('keywordDropdownContainer').classList.add('hidden');
+ document.getElementById('keywordDropdownContainer').classList.add('hidden');
 }
-
+ 
 function toggleResetModal(show) {
-  const modal = document.getElementById('resetConfirmModal');
+ const modal = document.getElementById('resetConfirmModal');
   if (show) modal.classList.remove('hidden');
-  else modal.classList.add('hidden');
+ else modal.classList.add('hidden');
 }
-
+ 
 function triggerResetWithBackup() {
-  toggleResetModal(true);
+ toggleResetModal(true);
 }
-
+ 
 function executeReset(withBackup) {
   if (withBackup) exportProject();
-  localStorage.clear();
-  newsDatabase = []; exportHistory = []; currentId = 1; selectedKeywords = [];
-  filteredNewsResult = []; currentlyVisibleIds = [];
-  document.getElementById('eventTheme').value = "";
-  document.getElementById('sortSection').classList.add('hidden');
-  document.getElementById('sortableList').innerHTML = "";
-  toggleResetModal(false);
-  renderDatabase();
-  renderHistoryButtons();
-  alert("系統已完全重設歸零！");
+ localStorage.clear();
+ newsDatabase = []; exportHistory = []; currentId = 1; selectedKeywords = [];
+ filteredNewsResult = []; currentlyVisibleIds = [];
+ document.getElementById('eventTheme').value = "";
+ document.getElementById('sortSection').classList.add('hidden');
+ document.getElementById('sortableList').innerHTML = "";
+ toggleResetModal(false);
+ renderDatabase();
+ renderHistoryButtons();
+ alert("系統已完全重設歸零！");
 }
-
+ 
 function importNews() {
-  const date = document.getElementById('inputModal').querySelector('#newsDate').value;
-  const type = document.getElementById('inputModal').querySelector('#newsType').value;
-  const media = document.getElementById('inputModal').querySelector('#mediaName').value.trim();
-  const title = document.getElementById('inputModal').querySelector('#newsTitle').value.trim();
-  const link = document.getElementById('inputModal').querySelector('#newsLink').value.trim();
-  const reporter = document.getElementById('inputModal').querySelector('#reporter').value.trim();
-  const keywords = document.getElementById('inputModal').querySelector('#keywords').value.trim();
+ const date = document.getElementById('inputModal').querySelector('#newsDate').value;
+ const type = document.getElementById('inputModal').querySelector('#newsType').value;
+ const media = document.getElementById('inputModal').querySelector('#mediaName').value.trim();
+ const title = document.getElementById('inputModal').querySelector('#newsTitle').value.trim();
+ const link = document.getElementById('inputModal').querySelector('#newsLink').value.trim();
+ const reporter = document.getElementById('inputModal').querySelector('#reporter').value.trim();
+ const keywords = document.getElementById('inputModal').querySelector('#keywords').value.trim();
   
   if (!title) {
-    alert("【匯入失敗】報導標題為必填項目！");
-    return;
+   alert("【匯入失敗】報導標題為必填項目！");
+   return;
   }
   
   if (link.startsWith('http')) {
-    const isDuplicate = newsDatabase.some(item => item.link === link);
-    if (isDuplicate) {
-      alert("此報導已收錄");
-      return;
+   const isDuplicate = newsDatabase.some(item => item.link === link);
+   if (isDuplicate) {
+     alert("此報導已收錄");
+     return;
     }
   }
   
-  const newsItem = {
-    id: currentId++,
-    date: date || "未填",
-    type: type,
-    media: media || "未填",
-    title: title,
-    link: link || "未填",
-    reporter: reporter || "",
-    keywords: keywords || ""
+ const newsItem = {
+   id: currentId++,
+   date: date || "未填",
+   type: type,
+   media: media || "未填",
+   title: title,
+   link: link || "未填",
+   reporter: reporter || "",
+   keywords: keywords || ""
   };
-  newsDatabase.push(newsItem);
-  saveToLocalStorage();
-  renderDatabase();
+ newsDatabase.push(newsItem);
+ saveToLocalStorage();
+ renderDatabase();
   
-  document.getElementById('inputModal').querySelector('#mediaName').value = "";
-  document.getElementById('inputModal').querySelector('#newsTitle').value = "";
-  document.getElementById('inputModal').querySelector('#newsLink').value = "";
-  document.getElementById('inputModal').querySelector('#reporter').value = "";
-  document.getElementById('inputModal').querySelector('#keywords').value = "";
+ document.getElementById('inputModal').querySelector('#mediaName').value = "";
+ document.getElementById('inputModal').querySelector('#newsTitle').value = "";
+ document.getElementById('inputModal').querySelector('#newsLink').value = "";
+ document.getElementById('inputModal').querySelector('#reporter').value = "";
+ document.getElementById('inputModal').querySelector('#keywords').value = "";
 }
-
+ 
 function updateKeywordFilters() {
-  const allKeywords = new Set();
-  newsDatabase.forEach(item => {
-    if (item.keywords) {
-      item.keywords.split(/[,，、]/).forEach(k => {
-        if (k.trim()) allKeywords.add(k.trim());
-      });
+ const allKeywords = new Set();
+ newsDatabase.forEach(item => {
+   if (item.keywords) {
+     item.keywords.split(/[,，、]/).forEach(k => {
+       if (k.trim()) allKeywords.add(k.trim());
+     });
     }
   });
   
-  const container = document.getElementById('keywordDropdownContainer');
-  container.innerHTML = "";
+ const container = document.getElementById('keywordDropdownContainer');
+ container.innerHTML = "";
   
   if (allKeywords.size === 0) {
-    container.innerHTML = `<p class="text-gray-400 text-[10px] text-center">暫無任何關鍵字</p>`;
-    return;
+   container.innerHTML = `<p class="text-gray-400 text-[10px] text-center">暫無任何關鍵字</p>`;
+   return;
   }
   
-  allKeywords.forEach(kw => {
-    const isChecked = selectedKeywords.includes(kw) ? "checked" : "";
-    const div = document.createElement('div');
-    div.className = "flex items-center space-x-2 py-0.5 hover:bg-gray-50 px-1 rounded text-xs text-gray-700";
-    div.innerHTML = `
-      <input type="checkbox" id="kw-${kw}" value="${kw}" ${isChecked} onchange="toggleKeywordFilter(this)" class="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5">
-      <label for="kw-${kw}" class="cursor-pointer select-none text-gray-600 hover:text-gray-900 truncate block flex-1" title="${kw}">${kw}</label>
-    `;
-    container.appendChild(div);
+ allKeywords.forEach(kw => {
+   const isChecked = selectedKeywords.includes(kw) ? "checked" : "";
+   const div = document.createElement('div');
+   div.className = "flex items-center space-x-2 py-0.5 hover:bg-gray-50 px-1 rounded text-xs text-gray-700";
+   div.innerHTML = `
+     <input type="checkbox" id="kw-${kw}" value="${kw}" ${isChecked} onchange="toggleKeywordFilter(this)" class="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5">
+     <label for="kw-${kw}" class="cursor-pointer select-none text-gray-600 hover:text-gray-900 truncate block flex-1" title="${kw}">${kw}</label>
+   `;
+   container.appendChild(div);
   });
 }
-
+ 
 function toggleKeywordFilter(cb) {
   if (cb.checked) {
-    if (!selectedKeywords.includes(cb.value)) selectedKeywords.push(cb.value);
+   if (!selectedKeywords.includes(cb.value)) selectedKeywords.push(cb.value);
   } else {
-    selectedKeywords = selectedKeywords.filter(k => k !== cb.value);
+   selectedKeywords = selectedKeywords.filter(k => k !== cb.value);
   }
-  renderDatabase();
+ renderDatabase();
 }
-
+ 
 function getExportedIdsFromHistory() {
-  const exportedIds = new Set();
-  const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
-  const currentHistory = exportHistory.filter(h => h.theme === currentTheme);
+ const exportedIds = new Set();
+ const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
+ const currentHistory = exportHistory.filter(h => h.theme === currentTheme);
   
-  currentHistory.forEach(h => {
-    h.sortedKeys.forEach(key => {
-      let found = newsDatabase.find(item => item.title === key.title && item.media === key.media);
-      if (found) exportedIds.add(found.id);
-    });
+ currentHistory.forEach(h => {
+   h.sortedKeys.forEach(key => {
+     let found = newsDatabase.find(item => item.title === key.title && item.media === key.media);
+     if (found) exportedIds.add(found.id);
+   });
   });
-  return Array.from(exportedIds);
+ return Array.from(exportedIds);
 }
-
+ 
 function handleFieldRightClick(e, id, fieldName, fieldLabel) {
-  e.preventDefault(); e.stopPropagation();
-  const item = newsDatabase.find(x => x.id === id);
+ e.preventDefault(); e.stopPropagation();
+ const item = newsDatabase.find(x => x.id === id);
   if (!item) return;
   
-  const originalValue = item[fieldName] || "";
-  const newValue = prompt(`請修改【編號 ${id}】的「${fieldLabel}」：`, originalValue);
+ const originalValue = item[fieldName] || "";
+ const newValue = prompt(`請修改【編號 ${id}】的「${fieldLabel}」：`, originalValue);
   
   if (newValue !== null) {
-    item[fieldName] = newValue.trim();
-    saveToLocalStorage();
-    renderDatabase();
-    refreshSortSectionIfActive();
+   item[fieldName] = newValue.trim();
+   saveToLocalStorage();
+   renderDatabase();
+   refreshSortSectionIfActive();
   }
 }
-
+ 
 function renderDatabase() {
-  const tbody = document.getElementById('databaseBody');
-  tbody.innerHTML = "";
+ const tbody = document.getElementById('databaseBody');
+ tbody.innerHTML = "";
   
   let displayData = newsDatabase;
   if (selectedKeywords.length > 0) {
-    displayData = newsDatabase.filter(item => {
-      if (!item.keywords) return false;
-      const itemKws = item.keywords.split(/[,，、]/).map(k => k.trim());
-      return selectedKeywords.some(sk => itemKws.includes(sk));
-    });
+   displayData = newsDatabase.filter(item => {
+     if (!item.keywords) return false;
+     const itemKws = item.keywords.split(/[,，、]/).map(k => k.trim());
+     return selectedKeywords.some(sk => itemKws.includes(sk));
+   });
   }
   
-  currentlyVisibleIds = displayData.map(item => item.id);
-  const activeExportedIds = getExportedIdsFromHistory();
-
-  displayData.forEach(item => {
-    const tr = document.createElement('tr');
-    tr.className = "hover:bg-gray-50 transition border-b border-gray-100 h-9 cursor-move-row";
-    tr.setAttribute('data-db-id', item.id);
-
-    let linkDisplay = item.link;
-    if (item.link.startsWith('http')) {
-      linkDisplay = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline block truncate" title="${item.link}">${item.link}</a>`;
+ currentlyVisibleIds = displayData.map(item => item.id);
+ const activeExportedIds = getExportedIdsFromHistory();
+ 
+ displayData.forEach(item => {
+   const tr = document.createElement('tr');
+   tr.className = "hover:bg-gray-50 transition border-b border-gray-100 h-9 cursor-move-row";
+   tr.setAttribute('data-db-id', item.id);
+ 
+   let linkDisplay = item.link;
+   if (item.link.startsWith('http')) {
+     linkDisplay = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline block truncate" title="${item.link}">${item.link}</a>`;
     } else {
-      linkDisplay = `<span class="block truncate" title="${item.link}">${item.link}</span>`;
+     linkDisplay = `<span class="block truncate" title="${item.link}">${item.link}</span>`;
     }
     
-    const dateColorClass = activeExportedIds.includes(item.id) ? "text-red-600 font-semibold" : "";
-    const reporterText = item.reporter || "";
-
-    tr.innerHTML = `
-      <td class="p-2 text-center font-medium text-red-500 cursor-pointer bg-red-50/30 hover:bg-red-100 font-bold select-none"
-          oncontextmenu="handleIdRightClick(event, ${item.id})" title="點擊右鍵可刪除此筆">
-        ${item.id}
-      </td>
-      <td class="p-2 truncate ${dateColorClass} cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'date', '收錄日期')">${item.date}</td>
-      <td class="p-2 select-none" oncontextmenu="handleTypeRightClick(event, ${item.id})">
-        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
-      </td>
-      <td class="p-2 font-medium truncate cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'media', '媒體名稱')">${item.media}</td>
-      <td class="p-2 truncate font-medium text-gray-900 cursor-pointer" title="${item.title}" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'title', '報導標題')">${item.title}</td>
-      <td class="p-2 truncate cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'link', '連結/版位')">${linkDisplay}</td>
-      <td class="p-2 truncate cursor-pointer font-medium" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'reporter', '記者')">${reporterText}</td>
-      <td class="p-2 truncate text-gray-400 cursor-pointer" title="${item.keywords}" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'keywords', '關鍵字')">${item.keywords}</td>
-    `;
-    tbody.appendChild(tr);
+   const dateColorClass = activeExportedIds.includes(item.id) ? "text-red-600 font-semibold" : "";
+   const reporterText = item.reporter || "";
+ 
+   tr.innerHTML = `
+     <td class="p-2 text-center font-medium text-red-500 cursor-pointer bg-red-50/30 hover:bg-red-100 font-bold select-none" oncontextmenu="handleIdRightClick(event, ${item.id})" title="點擊右鍵可刪除此筆">
+       ${item.id}
+     </td>
+     <td class="p-2 truncate ${dateColorClass} cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'date', '收錄日期')">${item.date}</td>
+     <td class="p-2 select-none" oncontextmenu="handleTypeRightClick(event, ${item.id})">
+       <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
+     </td>
+     <td class="p-2 font-medium truncate cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'media', '媒體名稱')">${item.media}</td>
+     <td class="p-2 truncate font-medium text-gray-900 cursor-pointer" title="${item.title}" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'title', '報導標題')">${item.title}</td>
+     <td class="p-2 truncate cursor-pointer" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'link', '連結/版位')">${linkDisplay}</td>
+     <td class="p-2 truncate cursor-pointer font-medium" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'reporter', '記者')">${reporterText}</td>
+     <td class="p-2 truncate text-gray-400 cursor-pointer" title="${item.keywords}" oncontextmenu="handleFieldRightClick(event, ${item.id}, 'keywords', '關鍵字')">${item.keywords}</td>
+   `;
+   tbody.appendChild(tr);
   });
   
-  updateCounters(displayData);
-  updateKeywordFilters();
+ updateCounters(displayData);
+ updateKeywordFilters();
 }
-
+ 
 function reorderDatabaseIds() {
-  newsDatabase.forEach((item, index) => { item.id = index + 1; });
-  currentId = newsDatabase.length + 1;
+ newsDatabase.forEach((item, index) => { item.id = index + 1; });
+ currentId = newsDatabase.length + 1;
 }
-
+ 
 function handleTypeRightClick(e, id) {
-  e.preventDefault(); e.stopPropagation();
-  currentEditingMenuId = id;
-  const menu = document.getElementById('customTypeMenu');
-  menu.style.display = 'block';
-  menu.style.left = e.pageX + 'px';
-  menu.style.top = e.pageY + 'px';
+ e.preventDefault(); e.stopPropagation();
+ currentEditingMenuId = id;
+ const menu = document.getElementById('customTypeMenu');
+ menu.style.display = 'block';
+ menu.style.left = e.pageX + 'px';
+ menu.style.top = e.pageY + 'px';
 }
-
+ 
 function selectCustomType(type) {
   if (currentEditingMenuId) {
-    const item = newsDatabase.find(data => data.id === currentEditingMenuId);
-    if (item) {
-      item.type = type;
-      saveToLocalStorage();
-      renderDatabase();
-      refreshSortSectionIfActive();
+   const item = newsDatabase.find(data => data.id === currentEditingMenuId);
+   if (item) {
+     item.type = type;
+     saveToLocalStorage();
+     renderDatabase();
+     refreshSortSectionIfActive();
     }
   }
-  hideCustomMenu();
+ hideCustomMenu();
 }
-
+ 
 function hideCustomMenu() {
-  document.getElementById('customTypeMenu').style.display = 'none';
+ document.getElementById('customTypeMenu').style.display = 'none';
 }
-
+ 
 function handleIdRightClick(e, id) {
-  e.preventDefault();
+ e.preventDefault();
   if (confirm(`是否刪除此筆資料？(編號: ${id})`)) {
-    newsDatabase = newsDatabase.filter(item => item.id !== id);
-    reorderDatabaseIds();
-    saveToLocalStorage();
-    renderDatabase();
-    refreshSortSectionIfActive();
+   newsDatabase = newsDatabase.filter(item => item.id !== id);
+   reorderDatabaseIds();
+   saveToLocalStorage();
+   renderDatabase();
+   refreshSortSectionIfActive();
   }
 }
-
+ 
 function getTypeClass(type) {
-  switch(type) {
-    case '報紙': return 'bg-orange-100 text-orange-800';
-    case '影音': return 'bg-red-100 text-red-800';
-    case '雜誌': return 'bg-green-100 text-green-800';
-    case '網路': return 'bg-blue-100 text-blue-800';
-    default: return 'bg-gray-100 text-gray-800';
+ switch(type) {
+   case '報紙': return 'bg-orange-100 text-orange-800';
+   case '影音': return 'bg-red-100 text-red-800';
+   case '雜誌': return 'bg-green-100 text-green-800';
+   case '網路': return 'bg-blue-100 text-blue-800';
+   default: return 'bg-gray-100 text-gray-800';
   }
 }
-
+ 
 function updateCounters(currentDisplayData) {
-  const counts = { '報紙': 0, '影音': 0, '雜誌': 0, '網路': 0 };
-  currentDisplayData.forEach(item => { if (counts[item.type] !== undefined) counts[item.type]++; });
-  document.getElementById('count-newspaper').innerText = counts['報紙'];
-  document.getElementById('count-video').innerText = counts['影音'];
-  document.getElementById('count-magazine').innerText = counts['雜誌'];
-  document.getElementById('count-web').innerText = counts['網路'];
+ const counts = { '報紙': 0, '影音': 0, '雜誌': 0, '網路': 0 };
+ currentDisplayData.forEach(item => { if (counts[item.type] !== undefined) counts[item.type]++; });
+ document.getElementById('count-newspaper').innerText = counts['報紙'];
+ document.getElementById('count-video').innerText = counts['影音'];
+ document.getElementById('count-magazine').innerText = counts['雜誌'];
+ document.getElementById('count-web').innerText = counts['網路'];
   
-  document.getElementById('count-filtered').innerText = currentDisplayData.length;
-  document.getElementById('count-total').innerText = newsDatabase.length;
+ document.getElementById('count-filtered').innerText = currentDisplayData.length;
+ document.getElementById('count-total').innerText = newsDatabase.length;
 }
-
+ 
 function saveToLocalStorage() {
-  localStorage.setItem('prNewsDatabase', JSON.stringify(newsDatabase));
-  localStorage.setItem('prExportHistory', JSON.stringify(exportHistory));
+ localStorage.setItem('prNewsDatabase', JSON.stringify(newsDatabase));
+ localStorage.setItem('prExportHistory', JSON.stringify(exportHistory));
+}
+ 
+function refreshSortSectionIfActive() {
+ const sortSection = document.getElementById('sortSection'); 
+ if (!sortSection.classList.contains('hidden')) { 
+   const listItems = Array.from(document.getElementById('sortableList').children); 
+   const currentSortData = listItems.map(li => { 
+     const tKey = li.getAttribute('data-title-key'); 
+     const mKey = li.getAttribute('data-media-key'); 
+     const stars = parseInt(li.getAttribute('data-stars') || "0"); 
+     const idSpan = li.querySelector('.text-red-500'); 
+     const targetId = idSpan ? parseInt(idSpan.innerText) : null; 
+     let found = newsDatabase.find(db => db.id === targetId); 
+     if (!found) { found = newsDatabase.find(db => db.title === tKey && db.media === mKey); } 
+     if (found) return { ...found, stars: stars }; 
+     return null; 
+   }).filter(Boolean); 
+   renderSortableList(currentSortData);
+   saveCurrentSortStateToCache(); 
+  } 
 }
 
-// 輔助函式：當大資料庫被更新或重新整理時，重刷下方排序清單以確保「編號」和「內容」完美對齊同步
-function refreshSortSectionIfActive() { const sortSection = document.getElementById('sortSection'); if (!sortSection.classList.contains('hidden')) { const listItems = Array.from(document.getElementById('sortableList').children); const currentSortData = listItems.map(li => { const tKey = li.getAttribute('data-title-key'); const mKey = li.getAttribute('data-media-key'); const stars = parseInt(li.getAttribute('data-stars') || "0"); // 💡 同步修改：加入唯一的 id 識別 const idSpan = li.querySelector('.text-red-500'); const targetId = idSpan ? parseInt(idSpan.innerText) : null; let found = newsDatabase.find(db => db.id === targetId); if (!found) { found = newsDatabase.find(db => db.title === tKey && db.media === mKey); } if (found) return { ...found, stars: stars }; return null; }).filter(Boolean); renderSortableList(currentSortData); saveCurrentSortStateToCache(); } }
-// 狀態記憶：將當前開著的排序框暫存至瀏覽器，重整網頁不消失
 function saveCurrentSortStateToCache() {
-  const sortSection = document.getElementById('sortSection');
+ const sortSection = document.getElementById('sortSection');
   if (sortSection.classList.contains('hidden')) {
-    localStorage.removeItem('prCurrentSortCache');
-    return;
+   localStorage.removeItem('prCurrentSortCache');
+   return;
   }
-  const listItems = Array.from(document.getElementById('sortableList').children);
-  const cacheState = {
-    reportDate: document.getElementById('lineReportDate').value,
-    reportTime: document.getElementById('lineReportTime').value,
-    list: listItems.map(li => ({
-      title: li.getAttribute('data-title-key'),
-      media: li.getAttribute('data-media-key'),
-      stars: parseInt(li.getAttribute('data-stars') || "0")
-    }))
+ const listItems = Array.from(document.getElementById('sortableList').children);
+ const cacheState = {
+   reportDate: document.getElementById('lineReportDate').value,
+   reportTime: document.getElementById('lineReportTime').value,
+   list: listItems.map(li => ({
+     title: li.getAttribute('data-title-key'),
+     media: li.getAttribute('data-media-key'),
+     stars: parseInt(li.getAttribute('data-stars') || "0")
+   }))
   };
-  localStorage.setItem('prCurrentSortCache', JSON.stringify(cacheState));
+ localStorage.setItem('prCurrentSortCache', JSON.stringify(cacheState));
 }
-
+ 
 function loadCurrentSortStateFromCache() {
-  const cacheStr = localStorage.getItem('prCurrentSortCache');
+ const cacheStr = localStorage.getItem('prCurrentSortCache');
   if (!cacheStr) return;
   try {
-    const cacheData = JSON.parse(cacheStr);
-    if (cacheData.list && cacheData.list.length > 0) {
-      const restoredList = cacheData.list.map(s => {
-        let item = newsDatabase.find(db => db.title === s.title && db.media === s.media);
-        if (item) return { ...item, stars: s.stars || 0 };
-        return null;
-      }).filter(Boolean);
-      
-      if (restoredList.length > 0) {
-        document.getElementById('lineReportDate').value = cacheData.reportDate || "";
-        document.getElementById('lineReportTime').value = cacheData.reportTime || "";
-        renderSortableList(restoredList);
-        document.getElementById('sortSection').classList.remove('hidden');
-      }
+   const cacheData = JSON.parse(cacheStr);
+   if (cacheData.list && cacheData.list.length > 0) {
+     const restoredList = cacheData.list.map(s => {
+       let item = newsDatabase.find(db => db.title === s.title && db.media === s.media);
+       if (item) return { ...item, stars: s.stars || 0 };
+       return null;
+     }).filter(Boolean);
+     
+     if (restoredList.length > 0) {
+       document.getElementById('lineReportDate').value = cacheData.reportDate || "";
+       document.getElementById('lineReportTime').value = cacheData.reportTime || "";
+       renderSortableList(restoredList);
+       document.getElementById('sortSection').classList.remove('hidden');
+     }
     }
   } catch(e) { localStorage.removeItem('prCurrentSortCache'); }
 }
-
+ 
 // ================= 專案 匯出 / 匯入 =================
 function exportProject() {
-  const listItems = Array.from(document.getElementById('sortableList').children);
-  const currentSortingState = listItems.map(li => ({
-    title: li.getAttribute('data-title-key'),
-    media: li.getAttribute('data-media-key'),
-    stars: parseInt(li.getAttribute('data-stars') || "0")
-  }));
-
-  const dataStr = JSON.stringify({ 
-    theme: document.getElementById('eventTheme').value, 
-    database: newsDatabase, 
-    history: exportHistory,
-    currentSort: currentSortingState,
-    reportDate: document.getElementById('lineReportDate').value,
-    reportTime: document.getElementById('lineReportTime').value,
-    sortVisible: !document.getElementById('sortSection').classList.contains('hidden')
+ const listItems = Array.from(document.getElementById('sortableList').children);
+ const currentSortingState = listItems.map(li => ({
+   title: li.getAttribute('data-title-key'),
+   media: li.getAttribute('data-media-key'),
+   stars: parseInt(li.getAttribute('data-stars') || "0")
+ }));
+ 
+ const dataStr = JSON.stringify({ 
+   theme: document.getElementById('eventTheme').value, 
+   database: newsDatabase, 
+   history: exportHistory,
+   currentSort: currentSortingState,
+   reportDate: document.getElementById('lineReportDate').value,
+   reportTime: document.getElementById('lineReportTime').value,
+   sortVisible: !document.getElementById('sortSection').classList.contains('hidden')
   });
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `新聞收錄專案備份_${document.getElementById('eventTheme').value || '未命名'}.json`;
-  a.click();
+ const blob = new Blob([dataStr], { type: "application/json" });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = `新聞收錄專案備份_${document.getElementById('eventTheme').value || '未命名'}.json`;
+ a.click();
 }
-
+ 
 function importProject(e) {
-  const file = e.target.files[0];
+ const file = e.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    try {
-      const data = JSON.parse(evt.target.result);
-      if (data.database) {
-        newsDatabase = data.database.map(item => {
-          if (item.reporter === "未填") item.reporter = "";
-          return item;
-        });
-        exportHistory = data.history || [];
-        document.getElementById('eventTheme').value = data.theme || "";
-        reorderDatabaseIds();
-        saveTheme(); saveToLocalStorage(); renderDatabase();
-        
-        if (data.currentSort && data.currentSort.length > 0) {
-          filteredNewsResult = data.currentSort.map(s => {
-            let item = newsDatabase.find(db => db.title === s.title && db.media === s.media);
-            if (item) return { ...item, stars: s.stars || 0 };
-            return null;
-          }).filter(Boolean);
-          
-          if (filteredNewsResult.length > 0) {
-            renderSortableList(filteredNewsResult);
-            document.getElementById('lineReportDate').value = data.reportDate || "";
-            document.getElementById('lineReportTime').value = data.reportTime || "";
-            if (data.sortVisible) document.getElementById('sortSection').classList.remove('hidden');
-            saveCurrentSortStateToCache();
-          }
-        }
-        renderHistoryButtons();
-        alert("專案備份與排序狀態匯入成功！");
-      }
+ const reader = new FileReader();
+ reader.onload = function(evt) {
+   try {
+     const data = JSON.parse(evt.target.result);
+     if (data.database) {
+       newsDatabase = data.database.map(item => {
+         if (item.reporter === "未填") item.reporter = "";
+         return item;
+       });
+       exportHistory = data.history || [];
+       
+       // 💡 優化：還原活動主題並立即存入快取與欄位
+       const restoredTheme = data.theme || "";
+       document.getElementById('eventTheme').value = restoredTheme;
+       localStorage.setItem('prEventTheme', restoredTheme);
+       
+       reorderDatabaseIds();
+       saveToLocalStorage(); 
+       renderDatabase();
+       
+       if (data.currentSort && data.currentSort.length > 0) {
+         filteredNewsResult = data.currentSort.map(s => {
+           let item = newsDatabase.find(db => db.title === s.title && db.media === s.media);
+           if (item) return { ...item, stars: s.stars || 0 };
+           return null;
+         }).filter(Boolean);
+         
+         if (filteredNewsResult.length > 0) {
+           renderSortableList(filteredNewsResult);
+           document.getElementById('lineReportDate').value = data.reportDate || "";
+           document.getElementById('lineReportTime').value = data.reportTime || "";
+           if (data.sortVisible) document.getElementById('sortSection').classList.remove('hidden');
+           saveCurrentSortStateToCache();
+         }
+       }
+       renderHistoryButtons();
+       alert("專案備份與活動主題已完全匯入成功！");
+     }
     } catch (err) { alert("無效的專案檔案！"); }
   };
-  reader.readAsText(file);
+ reader.readAsText(file);
 }
-
+ 
 // ================= Excel (CSV) 匯出 / 匯入 =================
 function exportCSV() {
   if (newsDatabase.length === 0) return alert("沒有資料可導出！");
   let csvContent = "\uFEFF編號,收錄日期,報導類型,媒體名稱,報導標題,報導網址或報紙版位,記者名字,關鍵字\n";
-  newsDatabase.forEach(item => {
-    csvContent += `"${item.id}","${item.date}","${item.type}","${item.media}","${item.title}","${item.link}","${item.reporter || ''}","${item.keywords}"\n`;
+ newsDatabase.forEach(item => {
+   csvContent += `"${item.id}","${item.date}","${item.type}","${item.media}","${item.title}","${item.link}","${item.reporter || ''}","${item.keywords}"\n`;
   });
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `新聞資料庫_${document.getElementById('eventTheme').value || '未命名'}.csv`;
-  link.click();
+ const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+ const link = document.createElement("a");
+ link.href = URL.createObjectURL(blob);
+ link.download = `新聞資料庫_${document.getElementById('eventTheme').value || '未命名'}.csv`;
+ link.click();
 }
-
+ 
 function importCSV(e) {
-  const file = e.target.files[0];
+ const file = e.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    const text = evt.target.result;
-    const lines = text.split("\n");
-    let loadedCount = 0;
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-      const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
-      const csvTitle = cols[4];
-      if (!csvTitle || csvTitle === "報導標題" || csvTitle === "未填") continue;
-      
-      let rep = cols[6] || "";
-      if (rep === "未填") rep = "";
-
-      newsDatabase.push({
-        id: currentId++,
-        date: cols[1] || "未填",
-        type: cols[2] || "其他",
-        media: cols[3] || "未填",
-        title: csvTitle,
-        link: cols[5] || "未填",
-        reporter: rep,
-        keywords: cols[7] || ""
-      });
-      loadedCount++;
-    }
-    reorderDatabaseIds();
-    saveToLocalStorage(); renderDatabase();
-    alert(`成功匯入 ${loadedCount} 筆報導！`);
+ const reader = new FileReader();
+ reader.onload = function(evt) {
+   const text = evt.target.result;
+   const lines = text.split("\n");
+   let loadedCount = 0;
+   for (let i = 1; i < lines.length; i++) {
+     if (!lines[i].trim()) continue;
+     const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+     if (cols.length < 5) continue;
+     const csvTitle = cols[4];
+     if (!csvTitle) continue;
+     
+     const isDuplicate = newsDatabase.some(item => item.title === csvTitle && item.media === cols[3]);
+     if (!isDuplicate) {
+       newsDatabase.push({
+         id: currentId++,
+         date: cols[1] || "未填",
+         type: cols[2] || "網路",
+         media: cols[3] || "未填",
+         title: csvTitle,
+         link: cols[5] || "未填",
+         reporter: cols[6] || "",
+         keywords: cols[7] || ""
+       });
+       loadedCount++;
+     }
+   }
+   reorderDatabaseIds();
+   saveToLocalStorage();
+   renderDatabase();
+   refreshSortSectionIfActive();
+   alert(`CSV 匯入完成！成功新增 ${loadedCount} 則全新未重複的報導。`);
   };
-  reader.readAsText(file, "UTF-8");
+ reader.readAsText(file);
 }
 
-// ================= 重要性排序工具邏輯 =================
+// ================= 區間篩選與排序區塊渲染 =================
 function filterAndOpenSortModal() {
-  const startId = parseInt(document.getElementById('startId').value);
-  const endId = parseInt(document.getElementById('endId').value);
-  const specificInput = document.getElementById('specificIds').value.trim();
+  const start = parseInt(document.getElementById('startId').value);
+  const end = parseInt(document.getElementById('endId').value);
+  const specificStr = document.getElementById('specificIds').value.trim();
   
-  if (newsDatabase.length === 0) return alert("資料庫是空的喔！");
-  
-  filteredNewsResult = newsDatabase.filter(item => {
-    const inVisibleList = currentlyVisibleIds.includes(item.id);
-    const matchStart = !isNaN(startId) ? item.id >= startId : true;
-    const matchEnd = !isNaN(endId) ? item.id <= endId : true;
-    return inVisibleList && matchStart && matchEnd;
-  }).map(item => ({ ...item, stars: 0 }));
-  
-  if (specificInput) {
-    const ids = specificInput.split(/[,，、]/).map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-    ids.forEach(sid => {
-      const matchedNews = newsDatabase.find(item => item.id === sid);
-      if (matchedNews) {
-        const isAlreadyAdded = filteredNewsResult.some(item => item.id === matchedNews.id);
-        if (!isAlreadyAdded) {
-          filteredNewsResult.push({ ...matchedNews, stars: 0 });
-        }
-      }
+  let targetIds = [];
+  if (!isNaN(start) && !isNaN(end)) {
+    for (let i = start; i <= end; i++) { targetIds.push(i); }
+  }
+  if (specificStr) {
+    const tokens = specificStr.split(/[,，、\s]+/);
+    tokens.forEach(tok => {
+      const parsed = parseInt(tok);
+      if (!isNaN(parsed) && !targetIds.includes(parsed)) targetIds.push(parsed);
     });
   }
   
-  if (filteredNewsResult.length === 0) return alert("沒有找到符合條件的新聞報導！");
+  if (targetIds.length === 0) {
+    filteredNewsResult = [...currentlyVisibleIds].map(id => newsDatabase.find(x => x.id === id)).filter(Boolean);
+  } else {
+    filteredNewsResult = targetIds.map(id => newsDatabase.find(x => x.id === id)).filter(Boolean);
+  }
   
-  const now = new Date();
-  const MM = String(now.getMonth() + 1).padStart(2, '0');
-  const DD = String(now.getDate()).padStart(2, '0');
-  document.getElementById('lineReportDate').value = MM + DD;
+  if (filteredNewsResult.length === 0) return alert("找不到任何符合對應編號的新聞！");
   
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('lineReportTime').value = `${hours}:${minutes}`;
-  document.getElementById('singleInsertId').value = "";
+  filteredNewsResult = filteredNewsResult.map(item => ({ ...item, stars: 0 }));
   
   renderSortableList(filteredNewsResult);
   document.getElementById('sortSection').classList.remove('hidden');
-  document.getElementById('sortSection').scrollIntoView({ behavior: 'smooth' });
-  
   saveCurrentSortStateToCache();
 }
 
-function renderSortableList(dataList) {
-  const sortList = document.getElementById('sortableList');
-  sortList.innerHTML = "";
-  dataList.forEach(item => {
-    const li = createSortableLiElement(item);
-    sortList.appendChild(li);
+function insertSingleToCurrentSort() {
+  const inputEl = document.getElementById('singleInsertId');
+  const targetId = parseInt(inputEl.value);
+  if (isNaN(targetId)) return alert("請輸入有效的資料庫編號");
+  
+  const found = newsDatabase.find(db => db.id === targetId);
+  if (!found) return alert(`在資料庫中找不到編號 [ ${targetId} ] 的新聞`);
+  
+  const listItems = Array.from(document.getElementById('sortableList').children);
+  const isAlreadyInList = listItems.some(li => {
+    const idSpan = li.querySelector('.text-red-500');
+    return idSpan && parseInt(idSpan.innerText) === targetId;
   });
-  if (sortableInstance) sortableInstance.destroy();
-  sortableInstance = new Sortable(sortList, { 
-    animation: 150,
-    onEnd: function() {
-      // 拖動完排序清單後，也同步更新快取狀態
-      saveCurrentSortStateToCache();
+  
+  if (isAlreadyInList) return alert(`編號 [ ${targetId} ] 的新聞已經在下方排序清單中了`);
+  
+  const currentSortData = listItems.map(li => {
+    const tKey = li.getAttribute('data-title-key');
+    const mKey = li.getAttribute('data-media-key');
+    const stars = parseInt(li.getAttribute('data-stars') || "0");
+    const idSpan = li.querySelector('.text-red-500');
+    const sId = idSpan ? parseInt(idSpan.innerText) : null;
+    let item = newsDatabase.find(db => db.id === sId);
+    if (!item) item = newsDatabase.find(db => db.title === tKey && db.media === mKey);
+    if (item) return { ...item, stars: stars };
+    return null;
+  }).filter(Boolean);
+  
+  currentSortData.push({ ...found, stars: 0 });
+  renderSortableList(currentSortData);
+  inputEl.value = "";
+  saveCurrentSortStateToCache();
+}
+
+function renderSortableList(dataArr) {
+  const ul = document.getElementById('sortableList');
+  ul.innerHTML = "";
+  
+  dataArr.forEach(item => {
+    const li = document.createElement('li');
+    li.className = "flex text-xs py-2 px-2 items-center hover:bg-indigo-50/40 border-b border-gray-100 transition space-x-2";
+    li.setAttribute('data-title-key', item.title);
+    li.setAttribute('data-media-key', item.media);
+    li.setAttribute('data-stars', item.stars || 0);
+    
+    let linkBtn = "✕";
+    if (item.link && item.link.startsWith('http')) {
+      linkBtn = `<a href="${item.link}" target="_blank" class="bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded text-[10px] hover:bg-blue-100 transition font-bold">開啟</a>`;
+    } else if (item.link) {
+      linkBtn = `<span class="text-gray-400 text-[10px] bg-gray-100 px-1 rounded truncate block max-w-[60px]" title="${item.link}">${item.link}</span>`;
     }
+    
+    let starHtml = "";
+    for (let i = 1; i <= 3; i++) {
+      const activeClass = i <= (item.stars || 0) ? "active" : "";
+      starHtml += `<span class="star ${activeClass}" onclick="setRowStar(this, ${i})">★</span>`;
+    }
+    
+    li.innerHTML = `
+      <div class="w-8 text-center text-gray-300 font-bold cursor-move select-none text-sm">☰</div>
+      <div class="w-12 text-center text-red-500 font-bold select-none">${item.id}</div>
+      <div class="w-14 text-center select-none"><div class="star-rating">${starHtml}</div></div>
+      <div class="w-14 text-left select-none"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span></div>
+      <div class="w-24 text-left font-medium text-gray-700 truncate pl-1" title="${item.media}">${item.media}</div>
+      <div class="w-20 text-left font-medium text-gray-500 truncate" title="${item.reporter || ''}">${item.reporter || '-'}</div>
+      <div class="flex-1 text-left font-medium text-gray-900 truncate" title="${item.title}">${item.title}</div>
+      <div class="w-16 text-center select-none">${linkBtn}</div>
+    `;
+    ul.appendChild(li);
+  });
+  
+  if (sortableInstance) sortableInstance.destroy();
+  sortableInstance = new Sortable(ul, {
+    animation: 150,
+    handle: '.cursor-move',
+    onEnd: function() { saveCurrentSortStateToCache(); }
   });
 }
 
-function createSortableLiElement(item) {
-  const li = document.createElement('li');
-  li.className = "bg-white flex items-center justify-between border-b border-gray-100 cursor-move hover:bg-indigo-50/60 transition select-none py-1 px-2 text-xs text-gray-700";
-  li.setAttribute('data-title-key', item.title);
-  li.setAttribute('data-media-key', item.media);
-  const initialStars = item.stars || 0;
-  li.setAttribute('data-stars', initialStars);
-  li.oncontextmenu = function(e) { handleSortItemRightClick(e, item.title, item.media); };
+function setRowStar(starEl, rating) {
+  const li = starEl.closest('li');
+  const stars = li.querySelectorAll('.star');
+  const currentRating = parseInt(li.getAttribute('data-stars') || "0");
   
-  let linkHtml = `<span class="text-gray-300 font-normal">-</span>`;
-  if (item.link && item.link.startsWith('http')) {
-    linkHtml = `<a href="${item.link}" target="_blank" class="text-blue-600 hover:underline font-bold pointer-events-auto">連結</a>`;
-  } else if (item.link && item.link !== "未填") {
-    linkHtml = `<span class="text-gray-400 text-[10px] truncate block w-12 text-center" title="${item.link}">${item.link}</span>`;
-  }
-
-  li.innerHTML = `
-    <div class="flex items-center space-x-2 pointer-events-none flex-1 truncate">
-      <span class="text-gray-300 font-bold w-8 text-center text-sm"> ☰ </span>
-      <span class="text-red-500 font-bold w-12 text-center bg-red-50/50 rounded py-0.5">${item.id}</span>
-      <div class="w-14 text-center pointer-events-auto star-rating" onclick="toggleStars(event, this)">
-        <span class="star ${initialStars >= 1 ? 'active' : ''}" data-value="1">★</span>
-        <span class="star ${initialStars >= 2 ? 'active' : ''}" data-value="2">★</span>
-      </div>
-      <div class="w-14 text-left">
-        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${getTypeClass(item.type)}">${item.type}</span>
-      </div>
-      <span class="font-bold text-gray-900 w-24 truncate">${item.media}</span>
-      <span class="text-gray-600 w-20 truncate font-medium">${item.reporter || ''}</span>
-      <span class="font-medium truncate text-gray-800 flex-1" title="${item.title}">${item.title}</span>
-    </div>
-    <div class="w-16 text-center z-10">${linkHtml}</div>
-  `;
-  return li;
-}
-
-function toggleStars(event, container) {
-  event.stopPropagation();
-  const li = container.closest('li');
-  let currentStars = parseInt(li.getAttribute('data-stars') || "0");
-  currentStars = (currentStars + 1) % 3;
-  li.setAttribute('data-stars', currentStars);
+  let finalRating = rating;
+  if (currentRating === 1 && rating === 1) finalRating = 0;
   
-  const stars = container.querySelectorAll('.star');
+  li.setAttribute('data-stars', finalRating);
   stars.forEach((s, idx) => {
-    if (idx < currentStars) s.classList.add('active');
+    if (idx < finalRating) s.classList.add('active');
     else s.classList.remove('active');
   });
   saveCurrentSortStateToCache();
 }
 
-function insertSingleToCurrentSort() {
-  const idInput = document.getElementById('singleInsertId');
-  const targetId = parseInt(idInput.value);
-  if (isNaN(targetId)) return alert("請輸入正確編號數字！");
-  const matchedNews = newsDatabase.find(item => item.id === targetId);
-  if (!matchedNews) return alert(`找不到編號「${targetId}」的新聞。`);
-  
-  const sortList = document.getElementById('sortableList');
-  const isDuplicate = Array.from(sortList.children).some(li => {
-    return li.getAttribute('data-title-key') === matchedNews.title && li.getAttribute('data-media-key') === matchedNews.media;
-  });
-  if (isDuplicate) return alert(`此新聞已在排序清單中。`);
-  
-  const newLi = createSortableLiElement({ ...matchedNews, stars: 0 });
-  sortList.appendChild(newLi);
-  idInput.value = "";
-  newLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  
-  saveCurrentSortStateToCache();
-}
-
-function handleSortItemRightClick(e, titleKey, mediaKey) {
-  e.preventDefault(); e.stopPropagation();
-  const targetItem = newsDatabase.find(item => item.title === titleKey && item.media === mediaKey);
-  if (!targetItem) return;
-  const action = prompt(`操作：【${targetItem.media}】\n1 : 僅從本次排序移除\n2 : 從資料庫完全刪除`);
-  if (action === '1') {
-    e.target.closest('li').remove();
-    saveCurrentSortStateToCache();
-  } else if (action === '2') {
-    if (confirm(`確定從總資料庫完全刪除嗎？`)) {
-      newsDatabase = newsDatabase.filter(item => !(item.title === titleKey && item.media === mediaKey));
-      reorderDatabaseIds(); 
-      saveToLocalStorage(); 
-      renderDatabase();
-      e.target.closest('li').remove();
-      refreshSortSectionIfActive();
-    }
-  }
-}
-
-function renderHistoryButtons() {
-  const container = document.getElementById('historyButtonsContainer');
-  container.innerHTML = "";
-  const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
-  const currentHistory = exportHistory.filter(h => h.theme === currentTheme);
-  if (currentHistory.length === 0) {
-    container.innerHTML = `<span class="text-gray-400 text-[10px]">暫無紀錄</span>`;
-    return;
-  }
-  
-  const displayHistory = [...currentHistory].reverse();
-
-  displayHistory.forEach((h, idx) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = "has-tooltip inline-block";
+// ================= 儲存排序並匯出成果回報文字 (精準防錯版) =================
+function saveSortAndExport() {
+  const listItems = Array.from(document.getElementById('sortableList').children);
+  const finalSortedData = listItems.map(li => {
+    const tKey = li.getAttribute('data-title-key');
+    const mKey = li.getAttribute('data-media-key');
+    const stars = parseInt(li.getAttribute('data-stars') || "0");
     
-    const tooltip = document.createElement('div');
-    tooltip.className = "tooltip";
-    tooltip.innerText = `儲存時間：${h.timestamp}`;
+    const idSpan = li.querySelector('.text-red-500');
+    const targetId = idSpan ? parseInt(idSpan.innerText) : null;
     
-    const btn = document.createElement('button');
-    btn.className = "bg-gray-100 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 px-2.5 py-1 rounded text-[10px] text-gray-700 shadow-sm transition block max-w-[85px] truncate font-medium";
-    btn.innerText = `⏱️ 紀錄 ${idx + 1} (${h.count}則)`;
+    let found = newsDatabase.find(item => item.id === targetId);
+    if (!found) { found = newsDatabase.find(item => item.title === tKey && item.media === mKey); }
+    if (found) return { ...found, stars: stars };
+    return null;
+  }).filter(Boolean);
+  
+  if (finalSortedData.length === 0) return alert("排序清單內沒有資料可以匯出喔！");
+  
+  const theme = document.getElementById('eventTheme').value.trim() || "未命名活動項目";
+  const rDate = document.getElementById('lineReportDate').value.trim() || "0520";
+  const rTime = document.getElementById('lineReportTime').value.trim() || "18:00";
+  
+  let paperList = finalSortedData.filter(item => item.type === '報紙');
+  let videoList = finalSortedData.filter(item => item.type === '影音');
+  let webList = finalSortedData.filter(item => item.type === '網路');
+  let magazineList = finalSortedData.filter(item => item.type === '雜誌');
+  
+  let totalCount = finalSortedData.length;
+  let summaryParts = [];
+  if (paperList.length > 0) summaryParts.push(`報紙${paperList.length}則`);
+  if (videoList.length > 0) summaryParts.push(`影音${videoList.length}則`);
+  if (magazineList.length > 0) summaryParts.push(`雜誌${magazineList.length}則`);
+  if (webList.length > 0) summaryParts.push(`網路${webList.length}則`);
+  
+  let outputText = `【${rDate}成果回報】${theme}截止本日${rTime}，共計收錄${totalCount}則報導(${summaryParts.join('、')})，重要內容如下：\n`;
+  
+  const star3 = finalSortedData.filter(x => x.stars === 3);
+  const star2 = finalSortedData.filter(x => x.stars === 2);
+  const star1 = finalSortedData.filter(x => x.stars === 1);
+  const star0 = finalSortedData.filter(x => x.stars === 0 || !x.stars);
+  const textOutputOrderedList = [...star3, ...star2, ...star1, ...star0];
+  
+  textOutputOrderedList.forEach(item => {
+    let starPrefix = "";
+    if (item.stars === 3) starPrefix = "🔥🔥🔥 ";
+    if (item.stars === 2) starPrefix = "⭐⭐ ";
+    if (item.stars === 1) starPrefix = "✨ ";
     
-    btn.onclick = function() {
-      const loadedData = h.sortedKeys.map(key => {
-        let found = newsDatabase.find(item => item.title === key.title && item.media === key.media);
-        if (found) return { ...found, stars: key.stars || 0 };
-        return null;
-      }).filter(Boolean);
-      
-      if (loadedData.length > 0) {
-        renderSortableList(loadedData);
-        if (h.reportDate) document.getElementById('lineReportDate').value = h.reportDate;
-        if (h.reportTime) document.getElementById('lineReportTime').value = h.reportTime;
-        document.getElementById('sortSection').classList.remove('hidden');
-        renderDatabase();
-        saveCurrentSortStateToCache();
-        alert(`已載入紀錄 ${idx + 1} 的排序狀態！`);
-      } else {
-        alert("原紀錄中的新聞均已由總庫刪除，無法還原。");
-      }
-    };
-    
-    btn.oncontextmenu = function(e) {
-      e.preventDefault();
-      if (confirm(`確定要刪除這條歷史排序紀錄嗎？`)) {
-        exportHistory = exportHistory.filter(item => item.timestamp !== h.timestamp);
-        saveToLocalStorage(); 
-        renderHistoryButtons();
-        renderDatabase();
-        refreshSortSectionIfActive();
-      }
-    };
-    
-    wrapper.appendChild(tooltip);
-    wrapper.appendChild(btn);
-    container.appendChild(wrapper);
-  });
-}
-
-function saveSortAndExport() { const listItems = Array.from(document.getElementById('sortableList').children); const finalSortedData = listItems.map(li => { const tKey = li.getAttribute('data-title-key'); const mKey = li.getAttribute('data-media-key'); const stars = parseInt(li.getAttribute('data-stars') || "0"); // 💡 關鍵優化：從 DOM 中取得該列原本顯示的「編號」與「類型」 const idSpan = li.querySelector('.text-red-500'); const targetId = idSpan ? parseInt(idSpan.innerText) : null; // 優先用唯一的 id 去資料庫找，找不到再用標題+媒體比對，確保抓到正確類型的報導 let found = newsDatabase.find(item => item.id === targetId); if (!found) { found = newsDatabase.find(item => item.title === tKey && item.media === mKey); } if (found) return { ...found, stars: stars }; return null; }).filter(Boolean); if (finalSortedData.length === 0) return alert("排序清單內沒有資料可以匯出喔！");  
-  const sortedKeys = finalSortedData.map(item => ({ title: item.title, media: item.media, stars: item.stars }));
-  const rDate = document.getElementById('lineReportDate').value.trim() || "0000";
-  const rTime = document.getElementById('lineReportTime').value.trim() || "00:00";
-  const now = new Date();
-  
-  const record = {
-    timestamp: now.toLocaleString(),
-    timeOnly: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false}),
-    theme: document.getElementById('eventTheme').value || "未命名活動",
-    count: finalSortedData.length,
-    sortedKeys: sortedKeys,
-    reportDate: rDate,
-    reportTime: rTime
-  };
-  
-  exportHistory.unshift(record);
-  saveToLocalStorage();
-  renderHistoryButtons();
-  renderDatabase();
-  saveCurrentSortStateToCache();
-  generateTextOutput(finalSortedData, rDate, rTime);
-}
-
-function generateTextOutput(dataList, rDate, rTime) {
-  let theme = document.getElementById('eventTheme').value || "未命名活動";
-  let totalCount = dataList.length;
-  let paperList = dataList.filter(item => item.type === '報紙');
-  let videoList = dataList.filter(item => item.type === '影音');
-  let magazineList = dataList.filter(item => item.type === '雜誌');
-  let webList = dataList.filter(item => item.type === '網路');
-  
-  let outputText = `${rDate}【${theme}】(${rTime})新增${totalCount}則相關報導，請參考\n\n`;
-  if (paperList.length > 0)    outputText += `報紙：${paperList.length}則(圖檔如附)\n`;
-  if (videoList.length > 0)    outputText += `影音：${videoList.length}則\n`;
-  if (magazineList.length > 0) outputText += `雜誌：${magazineList.length}則\n`;
-  if (webList.length > 0)      outputText += `網路：${webList.length}則\n`;
-  outputText += `\n`;
-  
-  const starStr = (num) => "★".repeat(num);
-
-  if (paperList.length > 0) {
-    outputText += `■ 報紙：${paperList.length}則(圖檔如附)\n`;
-    paperList.forEach((item, index) => { 
-      let stars = item.stars ? ` ${starStr(item.stars)}` : "";
-      outputText += `${index + 1}.${item.media}_${item.link}_${item.title}${stars}\n`; 
-    });
-    outputText += `\n`;
-  }
-  if (videoList.length > 0) {
-    outputText += `■ 影音：${videoList.length}則\n`;
-    videoList.forEach((item, index) => { 
-      let stars = item.stars ? ` ${starStr(item.stars)}` : "";
-      outputText += `${index + 1}.${item.title}_${item.media}${stars}\n${item.link}\n\n`; 
-    });
-  }
-  if (magazineList.length > 0) {
-    outputText += `■ 雜誌：${magazineList.length}則\n`;
-    magazineList.forEach((item, index) => { 
-      let stars = item.stars ? ` ${starStr(item.stars)}` : "";
-      outputText += `${index + 1}.${item.title}_${item.media}${stars}\n${item.link}\n\n`; 
-    });
-  }
-  if (webList.length > 0) {
-    outputText += `■ 網路：${webList.length}則\n`;
-    webList.forEach((item, index) => { 
-      let stars = item.stars ? ` ${starStr(item.stars)}` : "";
-      outputText += `${index + 1}.${item.title}_${item.media}${stars}\n${item.link}\n\n`; 
-    });
-  }
-  
-  navigator.clipboard.writeText(outputText).then(() => {
-    alert(` ✨  成果回報文字生成成功並已自動複製！\nDATABASE 相關日期已成功套用紅字標記！`);
-  }).catch(err => {
-    alert("自動複製失敗，請手動複製內容。");
-  });
-}
-</script>
-</body>
-</html>
+    let reporterStr = item.reporter ? `/${item.reporter}` : "";
+    if (item.type === '報紙') {
+      outputText += `● ${starPrefix}
