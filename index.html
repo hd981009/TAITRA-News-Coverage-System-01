@@ -73,7 +73,7 @@
 <div class="md:col-span-3 space-y-4">
 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
 <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
-<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATA BASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序，各欄位按右鍵可快速修改)</span></h3>
+<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATABASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序，各欄位按右鍵可快速修改)</span></h3>
 <div class="flex space-x-2 text-xs">
 <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
   📊 匯出 CSV
@@ -975,4 +975,95 @@ function saveSortAndExport() {
     
     let reporterStr = item.reporter ? `/${item.reporter}` : "";
     if (item.type === '報紙') {
-      outputText += `● ${starPrefix}
+      outputText += `● ${starPrefix}[報紙] ${item.media}${reporterStr}：${item.title} (${item.link})\n`;
+    } else {
+      outputText += `● ${starPrefix}[${item.type}] ${item.media}${reporterStr}：${item.title}\n  ${item.link}\n`;
+    }
+  });
+  
+  outputText += `\n`;
+  if (paperList.length > 0) {
+    outputText += `■ 報紙：${paperList.length}則(圖檔如附)\n`;
+    paperList.forEach((item, index) => { outputText += `${index + 1}.${item.media}_${item.link}_${item.title}\n`; });
+    outputText += `\n`;
+  }
+  if (videoList.length > 0) {
+    outputText += `■ 影音：${videoList.length}則\n`;
+    videoList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+  }
+  if (webList.length > 0) {
+    outputText += `■ 網路：${webList.length}則\n`;
+    webList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+  }
+  if (magazineList.length > 0) {
+    outputText += `■ 雜誌：${magazineList.length}則\n`;
+    magazineList.forEach((item, index) => { outputText += `${index + 1}.${item.title}_${item.media}\n${item.link}\n\n`; });
+  }
+  
+  navigator.clipboard.writeText(outputText).then(() => {
+    alert(` ✨ 成果回報文字生成成功！\n\n已『自動複製到剪貼簿』，可直接貼至 LINE 視窗回報！`);
+  });
+  
+  const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
+  const newHistoryItem = {
+    timestamp: new Date().toLocaleString(),
+    theme: currentTheme,
+    reportDate: rDate,
+    reportTime: rTime,
+    sortedKeys: finalSortedData.map(x => ({ title: x.title, media: x.media, stars: x.stars }))
+  };
+  
+  exportHistory = exportHistory.filter(h => h.reportDate !== rDate || h.reportTime !== rTime || h.theme !== currentTheme);
+  exportHistory.unshift(newHistoryItem);
+  if (exportHistory.length > 5) exportHistory.pop();
+  
+  saveToLocalStorage();
+  renderHistoryButtons();
+  renderDatabase();
+}
+
+// ================= 歷史紀錄快取與按鈕管理 =================
+function renderHistoryButtons() {
+  const container = document.getElementById('historyButtonsContainer');
+  container.innerHTML = "";
+  
+  const currentTheme = document.getElementById('eventTheme').value || "未命名活動";
+  const filteredHistory = exportHistory.filter(h => h.theme === currentTheme);
+  
+  if (filteredHistory.length === 0) {
+    container.innerHTML = `<span class="text-[10px] text-gray-400 italic">⏱️ 目前主題暫無歷史排序紀錄</span>`;
+    return;
+  }
+  
+  filteredHistory.forEach((h, idx) => {
+    const btn = document.createElement('button');
+    btn.className = "bg-gray-100 hover:bg-indigo-50 text-gray-600 hover:text-indigo-700 border border-gray-300 px-2 py-0.5 rounded text-[10px] font-medium transition shadow-sm truncate max-w-[110px]";
+    btn.innerText = `⏱️ 紀錄 ${h.reportDate}-${h.reportTime}`;
+    btn.title = `儲存時間：${h.timestamp}\n點擊可直接將此歷史順序還原送入下方排序`;
+    btn.onclick = () => loadHistoryToPreview(h);
+    container.appendChild(btn);
+  });
+}
+
+function loadHistoryToPreview(historyItem) {
+  if (!historyItem || !historyItem.sortedKeys) return;
+  
+  const restoredList = historyItem.sortedKeys.map(key => {
+    let found = newsDatabase.find(item => item.title === key.title && item.media === key.media);
+    if (found) return { ...found, stars: key.stars || 0 };
+    return null;
+  }).filter(Boolean);
+  
+  if (restoredList.length === 0) return alert("無法還原！該歷史紀錄中的新聞項目，已在上方資料庫中被刪除。");
+  
+  document.getElementById('lineReportDate').value = historyItem.reportDate || "";
+  document.getElementById('lineReportTime').value = historyItem.reportTime || "";
+  
+  renderSortableList(restoredList);
+  document.getElementById('sortSection').classList.remove('hidden');
+  saveCurrentSortStateToCache();
+  alert(`已成功還原活動【${historyItem.theme}】在 ${historyItem.reportDate} ${historyItem.reportTime} 的歷史排序狀態！`);
+}
+</script>
+</body>
+</html>
