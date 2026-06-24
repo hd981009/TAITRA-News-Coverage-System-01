@@ -21,10 +21,13 @@
  .star.active { color: #F59E0B; }
  .modal-collapsed { height: 38px !important; overflow: hidden !important; }
  /* 修正需求1：設定預設 12 行高度 (約 432px) 並允許手動拉伸高度 */
+ /* 修正：確保右下角拉動控制鈕在所有瀏覽器都能正常顯示與拉動 */
  .resizable-db-box {
    height: 432px;
-   resize: y;
-   overflow: auto;
+   min-height: 200px;
+   resize: y !important;
+   overflow: auto !important;
+   display: block !important;
  }
 </style>
 </head>
