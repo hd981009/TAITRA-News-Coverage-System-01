@@ -20,13 +20,10 @@
  .star { font-size: 14px; color: #D1D5DB; transition: color 0.1s; }
  .star.active { color: #F59E0B; }
  .modal-collapsed { height: 38px !important; overflow: hidden !important; }
- /* 修正需求1：設定預設 12 行高度 (約 432px) 並允許手動拉伸高度 */
- /* 修正：確保右下角拉動控制鈕在所有瀏覽器都能正常顯示與拉動 */
- .resizable-db-box {
+ /* 修正：移除手動拉伸，將高度固定在 12 行 (432px) */
+ .fixed-db-box {
    height: 432px;
-   min-height: 200px;
-   resize: y !important;
-   overflow: auto !important;
+   overflow-y: auto !important;
    display: block !important;
  }
 </style>
@@ -82,7 +79,7 @@
 <div class="md:col-span-3 space-y-4">
 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
 <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
-<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATABASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序，各欄位按右鍵可快速修改，右下角可拉動大小)</span></h3>
+<h3 class="text-sm font-semibold text-gray-700">新聞資料庫 (DATABASE) <span class="text-xs font-normal text-gray-400">(可直接拖曳調整順序，各欄位按右鍵可快速修改，已設定固定為 12 行高度)</span></h3>
 <div class="flex space-x-2 text-xs">
 <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 transition">
   📊 匯出 CSV
@@ -93,8 +90,7 @@
 <input type="file" id="importCSVFile" class="hidden" accept=".csv" onchange="importCSV(event)">
 </div>
 </div>
-<!-- 修正需求1：套用 resizable-db-box 類別，可自由拉伸縮放，預設高度為12行 -->
-<div class="w-full border-b border-gray-200 resizable-db-box">
+<div class="w-full border-b border-gray-200 fixed-db-box">
 <table class="w-full text-left border-collapse text-xs table-fixed">
 <thead class="sticky top-0 bg-gray-100 shadow-sm z-10 text-gray-500 font-medium border-b border-gray-200">
 <tr>
@@ -175,6 +171,7 @@
 <div class="w-24 text-left pl-1">媒體名稱</div>
 <div class="w-20 text-left">記者</div> 
 <div class="flex-1 text-left">報導標題</div> 
+<div class="w-32 text-left">關鍵字</div> 
 <div class="w-16 text-center">連結</div> 
 </div>
 <ul id="sortableList" class="divide-y divide-gray-200 min-h-[180px] max-h-[350px] overflow-y-auto"></ul>
@@ -210,7 +207,6 @@
 </div>
 <div>
 <label class="block text-gray-400 mb-1">報導類型</label>
-<!-- 修正需求2：調整新增選單順序為 報紙、影音、網路、雜誌 -->
 <select id="newsType" class="w-full p-1.5 border border-gray-300 rounded-md">
 <option value="報紙">報紙</option>
 <option value="影音">影音</option>
@@ -234,7 +230,7 @@
 <div class="grid grid-cols-2 gap-2">
 <div>
 <label class="block text-gray-700 mb-1">記者名字</label>
-<input type="text" id="reporter" placeholder="選填（無填寫則保持空白）" class="w-full p-1.5 border border-gray-300 rounded-md">
+<input type="text" id="reporter" placeholder="選填" class="w-full p-1.5 border border-gray-300 rounded-md">
 </div>
 <div>
 <label class="block text-gray-700 mb-1">關鍵字</label>
@@ -267,7 +263,6 @@
  </div>
 </div>
  
-<!-- 修正需求2：調整右鍵快速修改選單順序為 報紙、影音、網路、雜誌 -->
 <div id="customTypeMenu" class="bg-white border border-gray-200 shadow-md rounded-md py-1 text-xs">
  <div onclick="selectCustomType('報紙')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">報紙</div>
  <div onclick="selectCustomType('影音')" class="px-4 py-1.5 hover:bg-indigo-50 cursor-pointer">影音</div>
@@ -292,8 +287,6 @@ window.onload = function() {
  initDatabaseSortable();
  renderDatabase();
  renderHistoryButtons();
-  
-  // 網頁重新整理時，自動檢查並還原排序框狀態
  loadCurrentSortStateFromCache();
 };
  
@@ -314,7 +307,6 @@ function initDatabaseSortable() {
      reorderDatabaseIds();
      saveToLocalStorage();
      renderDatabase();
-     // 如果排序窗格開著，拉動庫順序也同步重刷
      refreshSortSectionIfActive();
     }
   });
@@ -722,7 +714,6 @@ function importProject(e) {
        });
        exportHistory = data.history || [];
        
-       // 💡 優化：還原活動主題並立即存入快取與欄位
        const restoredTheme = data.theme || "";
        document.getElementById('eventTheme').value = restoredTheme;
        localStorage.setItem('prEventTheme', restoredTheme);
@@ -862,7 +853,7 @@ function insertSingleToCurrentSort() {
     const sId = idSpan ? parseInt(idSpan.innerText) : null;
     let item = newsDatabase.find(db => db.id === sId);
     if (!item) item = newsDatabase.find(db => db.title === tKey && db.media === mKey);
-    if (item) return { ...item, stars: stars };
+    if (item) return { ...found, stars: stars }; 
     return null;
   }).filter(Boolean);
   
@@ -871,6 +862,7 @@ function insertSingleToCurrentSort() {
   inputEl.value = "";
   saveCurrentSortStateToCache();
 }
+// 修正：排序清單加入關鍵字欄位資料渲染
 function renderSortableList(dataArr) {
   const ul = document.getElementById('sortableList');
   ul.innerHTML = "";
@@ -895,6 +887,8 @@ function renderSortableList(dataArr) {
       starHtml += `<span class="star ${activeClass}" onclick="setRowStar(this, ${i})">★</span>`;
     }
     
+    const kwText = item.keywords || "-";
+    
     li.innerHTML = `
       <div class="w-8 text-center text-gray-300 font-bold cursor-move select-none text-sm">☰</div>
       <div class="w-12 text-center text-red-500 font-bold select-none">${item.id}</div>
@@ -903,6 +897,7 @@ function renderSortableList(dataArr) {
       <div class="w-24 text-left font-medium text-gray-700 truncate pl-1" title="${item.media}">${item.media}</div>
       <div class="w-20 text-left font-medium text-gray-500 truncate" title="${item.reporter || ''}">${item.reporter || '-'}</div>
       <div class="flex-1 text-left font-medium text-gray-900 truncate" title="${item.title}">${item.title}</div>
+      <div class="w-32 text-left font-medium text-gray-400 truncate" title="${kwText}">${kwText}</div>
       <div class="w-16 text-center select-none">${linkBtn}</div>
     `;
     ul.appendChild(li);
@@ -930,7 +925,7 @@ function setRowStar(starEl, rating) {
   });
   saveCurrentSortStateToCache();
 }
-// ================= 儲存排序並匯出成果回報文字 (修正需求3：精準符合指定格式與防錯) =================
+// ================= 儲存排序並匯出成果回報文字 =================
 function saveSortAndExport() {
   const listItems = Array.from(document.getElementById('sortableList').children);
   const finalSortedData = listItems.map(li => {
@@ -952,7 +947,6 @@ function saveSortAndExport() {
   const rDate = document.getElementById('lineReportDate').value.trim() || "0606";
   const rTime = document.getElementById('lineReportTime').value.trim() || "09:19";
   
-  // 依指定排序拆分
   let paperList = finalSortedData.filter(item => item.type === '報紙');
   let videoList = finalSortedData.filter(item => item.type === '影音');
   let webList = finalSortedData.filter(item => item.type === '網路');
@@ -960,17 +954,14 @@ function saveSortAndExport() {
   
   let totalCount = finalSortedData.length;
   
-  // 1. 生成開頭標題摘要
   let outputText = `${rDate}【${theme}】(上午${rTime})新增${totalCount}則相關報導，請參考\n\n`;
   
-  // 2. 生成摘要小計
   if (paperList.length > 0) outputText += `報紙：${paperList.length}則(圖檔如附)\n`;
   if (videoList.length > 0) outputText += `影音：${videoList.length}則\n`;
   if (webList.length > 0) outputText += `網路：${webList.length}則\n`;
   if (magazineList.length > 0) outputText += `雜誌：${magazineList.length}則\n`;
   outputText += `\n`;
   
-  // 3. 生成詳細區塊內容（無資料則不列出該區塊）
   if (paperList.length > 0) {
     outputText += `■ 報紙：${paperList.length}則(圖檔如附)\n`;
     paperList.forEach((item, index) => { 
@@ -1000,7 +991,6 @@ function saveSortAndExport() {
     });
   }
   
-  // 去除尾端多餘換行
   outputText = outputText.trimEnd() + `\n`;
   
   navigator.clipboard.writeText(outputText).then(() => {
