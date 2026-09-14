@@ -987,7 +987,7 @@ function saveSortAndExport() {
   
   let totalCount = finalSortedData.length;
   
-  let outputText = `${rDate}【${theme}】(上午${rTime})新增${totalCount}則相關報導，請參考\n\n`;
+  let outputText = `${rDate}【${theme}】(${rTime})新增${totalCount}則相關報導，請參考\n\n`;
   
   if (paperList.length > 0) outputText += `報紙：${paperList.length}則(圖檔如附)\n`;
   if (videoList.length > 0) outputText += `影音：${videoList.length}則\n`;
